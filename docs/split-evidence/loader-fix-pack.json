@@ -1,0 +1,101 @@
+[
+  {
+    "id": "dsh-devtunnel-ssh@0.0.1-experimental",
+    "name": "dsh-devtunnel-ssh",
+    "version": "0.0.1-experimental",
+    "size": 22506,
+    "unpackedSize": 59486,
+    "shasum": "cef31cb341da2812bc37c79921078f73196dc7d7",
+    "integrity": "sha512-EXNnUVEy0CVcpQaX9I7Nj53XOsuYB05zlWtIQBARwXvDJN7f9NlLAjxXiewM9llS/+Pc14wnDciGmoEGM7kCuQ==",
+    "filename": "dsh-devtunnel-ssh-0.0.1-experimental.tgz",
+    "files": [
+      {
+        "path": "MANUAL.md",
+        "size": 4223,
+        "mode": 384
+      },
+      {
+        "path": "README.md",
+        "size": 2521,
+        "mode": 384
+      },
+      {
+        "path": "cordis.patch.yml",
+        "size": 139,
+        "mode": 384
+      },
+      {
+        "path": "lib/capabilities.js",
+        "size": 1608,
+        "mode": 384
+      },
+      {
+        "path": "lib/carrier.js",
+        "size": 5817,
+        "mode": 384
+      },
+      {
+        "path": "lib/cli-policy.js",
+        "size": 1840,
+        "mode": 384
+      },
+      {
+        "path": "lib/client.js",
+        "size": 12677,
+        "mode": 384
+      },
+      {
+        "path": "lib/index.js",
+        "size": 3824,
+        "mode": 384
+      },
+      {
+        "path": "lib/lease-manager.js",
+        "size": 7473,
+        "mode": 384
+      },
+      {
+        "path": "lib/managed-connect.js",
+        "size": 5191,
+        "mode": 384
+      },
+      {
+        "path": "lib/output-parser.js",
+        "size": 1805,
+        "mode": 384
+      },
+      {
+        "path": "lib/owned-process.js",
+        "size": 2073,
+        "mode": 384
+      },
+      {
+        "path": "lib/preflight-route.js",
+        "size": 1410,
+        "mode": 384
+      },
+      {
+        "path": "lib/preflight-runner.js",
+        "size": 2968,
+        "mode": 384
+      },
+      {
+        "path": "lib/prerequisites.js",
+        "size": 4003,
+        "mode": 384
+      },
+      {
+        "path": "lib/registration.js",
+        "size": 1170,
+        "mode": 384
+      },
+      {
+        "path": "package.json",
+        "size": 744,
+        "mode": 384
+      }
+    ],
+    "entryCount": 17,
+    "bundled": []
+  }
+]

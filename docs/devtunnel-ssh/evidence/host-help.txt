@@ -1,0 +1,25 @@
+Description:
+  Host a tunnel, if tunnel ID is not specified a new tunnel will be created
+
+Usage:
+  devtunnel host [<tunnel-id>] [options]
+
+Arguments:
+  <tunnel-id>  Existing tunnel ID (optional)
+
+Options:
+  -d, --description <description>                   Add description to new tunnel
+  -l, --labels <labels>                             Add labels to new tunnel: space separated list of labels that can be used to search for tunnel
+  -p, --port-number, --port-numbers <port-numbers>  Local server port number. Specify multiple times for multiple ports: -p 3000 -p 5000
+  --protocol <protocol>                             Protocol for the port(s): 'http', 'https', or 'auto' (default)
+  -e, --expiration <expiration>                     Tunnel expiration (hours and days). Use h for hours and d for days
+  -a, --allow-anonymous                             Allow anonymous client access
+  -t, --access-token <access-token>                 Authenticate with the provided token (- to read from stdin)
+  --host-header <host-header>                       Host header value to rewrite in requests forwarded from a web client. Use "unchanged" to keep the original header, By default Host header is changed to "localhost".
+  --origin-header <origin-header>                   Origin header value to rewrite in requests forwarded from a web client. Use "unchanged" to keep the original header. By default Origin header is changed to "http(s)://localhost"
+  -r, --repo <repo>                                 Authorize connections based on repository access. Format: repo URL, owner/repo (GitHub), or org/project/repo (Azure DevOps)
+  -v, --verbose                                     Enable verbose output
+  -?, -h, --help                                    Show help and usage information
+
+
+

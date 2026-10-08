@@ -1,0 +1,232 @@
+TAP version 13
+# Subtest: index.js 汇总导出完整
+ok 1 - index.js 汇总导出完整
+  ---
+  duration_ms: 1.214167
+  type: 'test'
+  ...
+# Subtest: 错误码全集共 20 个，顺序与冻结稿 §2 一致
+ok 2 - 错误码全集共 20 个，顺序与冻结稿 §2 一致
+  ---
+  duration_ms: 0.434167
+  type: 'test'
+  ...
+# Subtest: errors.json：universe 与 httpStatus 与 errors.js 逐字一致
+ok 3 - errors.json：universe 与 httpStatus 与 errors.js 逐字一致
+  ---
+  duration_ms: 0.766709
+  type: 'test'
+  ...
+# Subtest: classify 返回 {category, retryable, outcomeKnown, httpStatus} 四字段
+ok 4 - classify 返回 {category, retryable, outcomeKnown, httpStatus} 四字段
+  ---
+  duration_ms: 0.221917
+  type: 'test'
+  ...
+# Subtest: HTTP 状态映射逐条符合协议稿 §7
+ok 5 - HTTP 状态映射逐条符合协议稿 §7
+  ---
+  duration_ms: 0.291584
+  type: 'test'
+  ...
+# Subtest: retryable 默认值：仅 PROVIDER_UNAVAILABLE / TUNNEL_UNREACHABLE / TRANSPORT_RESET 为 true
+ok 6 - retryable 默认值：仅 PROVIDER_UNAVAILABLE / TUNNEL_UNREACHABLE / TRANSPORT_RESET 为 true
+  ---
+  duration_ms: 0.080041
+  type: 'test'
+  ...
+# Subtest: outcomeKnown 默认值：传输类、TASK_LOST、OUTCOME_UNKNOWN 为 false，其余 true
+ok 7 - outcomeKnown 默认值：传输类、TASK_LOST、OUTCOME_UNKNOWN 为 false，其余 true
+  ---
+  duration_ms: 0.127
+  type: 'test'
+  ...
+# Subtest: category 枚举合法且每码有归类
+ok 8 - category 枚举合法且每码有归类
+  ---
+  duration_ms: 0.07325
+  type: 'test'
+  ...
+# Subtest: classify / ProtocolError 对未知错误码抛 TypeError
+ok 9 - classify / ProtocolError 对未知错误码抛 TypeError
+  ---
+  duration_ms: 0.545958
+  type: 'test'
+  ...
+# Subtest: ProtocolError 派生字段与分类一致
+ok 10 - ProtocolError 派生字段与分类一致
+  ---
+  duration_ms: 0.45225
+  type: 'test'
+  ...
+# Subtest: makeResult 结构：requestId/protocolVersion/instanceId/result，无 error 键
+ok 11 - makeResult 结构：requestId/protocolVersion/instanceId/result，无 error 键
+  ---
+  duration_ms: 0.25975
+  type: 'test'
+  ...
+# Subtest: makeResult：null result 合法；undefined result 抛 TypeError；instanceId 可省略
+ok 12 - makeResult：null result 合法；undefined result 抛 TypeError；instanceId 可省略
+  ---
+  duration_ms: 0.074
+  type: 'test'
+  ...
+# Subtest: makeError 结构：error 含 code/message/retryable/outcomeKnown，无 result 键
+ok 13 - makeError 结构：error 含 code/message/retryable/outcomeKnown，无 result 键
+  ---
+  duration_ms: 0.142583
+  type: 'test'
+  ...
+# Subtest: makeError：message 缺省取 code；extra 合并且不得覆盖保留键
+ok 14 - makeError：message 缺省取 code；extra 合并且不得覆盖保留键
+  ---
+  duration_ms: 0.518791
+  type: 'test'
+  ...
+# Subtest: makeResult/makeError：requestId 可为 null（解析前的传输层错误），但非 UUID 字符串抛 TypeError
+ok 15 - makeResult/makeError：requestId 可为 null（解析前的传输层错误），但非 UUID 字符串抛 TypeError
+  ---
+  duration_ms: 0.183833
+  type: 'test'
+  ...
+# Subtest: fixtures/envelope-ok.json 与 makeResult 输出逐字段一致
+ok 16 - fixtures/envelope-ok.json 与 makeResult 输出逐字段一致
+  ---
+  duration_ms: 0.321625
+  type: 'test'
+  ...
+# Subtest: fixtures/envelope-error.json 与 makeError 输出逐字段一致
+ok 17 - fixtures/envelope-error.json 与 makeError 输出逐字段一致
+  ---
+  duration_ms: 0.27625
+  type: 'test'
+  ...
+# Subtest: UUID 形状校验：合法形状通过（含大写），非法拒绝
+ok 18 - UUID 形状校验：合法形状通过（含大写），非法拒绝
+  ---
+  duration_ms: 0.085625
+  type: 'test'
+  ...
+# Subtest: protocolVersion 校验：仅接受数值 1
+ok 19 - protocolVersion 校验：仅接受数值 1
+  ---
+  duration_ms: 0.045042
+  type: 'test'
+  ...
+# Subtest: parseRequest：合法请求体解析并回显 requestId/protocolVersion
+ok 20 - parseRequest：合法请求体解析并回显 requestId/protocolVersion
+  ---
+  duration_ms: 0.151458
+  type: 'test'
+  ...
+# Subtest: parseRequest：请求示例（§3 pair / §6.1 jobs 无 protocolVersion）缺省视为 v1
+ok 21 - parseRequest：请求示例（§3 pair / §6.1 jobs 无 protocolVersion）缺省视为 v1
+  ---
+  duration_ms: 0.076
+  type: 'test'
+  ...
+# Subtest: parseRequest：字符串 body 亦可（UTF-8 编码）
+ok 22 - parseRequest：字符串 body 亦可（UTF-8 编码）
+  ---
+  duration_ms: 0.044458
+  type: 'test'
+  ...
+# Subtest: parseRequest：超出 maxBytes → PAYLOAD_TOO_LARGE（HTTP 413）
+ok 23 - parseRequest：超出 maxBytes → PAYLOAD_TOO_LARGE（HTTP 413）
+  ---
+  duration_ms: 0.200292
+  type: 'test'
+  ...
+# Subtest: parseRequest：非法 JSON / 非对象 body → INVALID_REQUEST
+ok 24 - parseRequest：非法 JSON / 非对象 body → INVALID_REQUEST
+  ---
+  duration_ms: 0.255042
+  type: 'test'
+  ...
+# Subtest: parseRequest：protocolVersion 显式非 1 → PROTOCOL_INCOMPATIBLE（HTTP 426）
+ok 25 - parseRequest：protocolVersion 显式非 1 → PROTOCOL_INCOMPATIBLE（HTTP 426）
+  ---
+  duration_ms: 0.19275
+  type: 'test'
+  ...
+# Subtest: parseRequest：requestId 形状非法 → INVALID_REQUEST；requireRequestId 缺失 → INVALID_REQUEST
+ok 26 - parseRequest：requestId 形状非法 → INVALID_REQUEST；requireRequestId 缺失 → INVALID_REQUEST
+  ---
+  duration_ms: 0.097584
+  type: 'test'
+  ...
+# Subtest: parseRequest：非 Buffer/字符串 body → TypeError（编程错误）
+ok 27 - parseRequest：非 Buffer/字符串 body → TypeError（编程错误）
+  ---
+  duration_ms: 0.102208
+  type: 'test'
+  ...
+# Subtest: parseRequest 抛出的 ProtocolError 不泄露 body 内容（秘密不进 message）
+ok 28 - parseRequest 抛出的 ProtocolError 不泄露 body 内容（秘密不进 message）
+  ---
+  duration_ms: 0.0765
+  type: 'test'
+  ...
+# Subtest: normalizeRelPath/canonicalize：fixtures 合法路径全部通过并正确规范化
+ok 29 - normalizeRelPath/canonicalize：fixtures 合法路径全部通过并正确规范化
+  ---
+  duration_ms: 0.74275
+  type: 'test'
+  ...
+# Subtest: normalizeRelPath/canonicalize：fixtures 非法路径全部按预期码拒绝
+ok 30 - normalizeRelPath/canonicalize：fixtures 非法路径全部按预期码拒绝
+  ---
+  duration_ms: 0.341375
+  type: 'test'
+  ...
+# Subtest: canonicalize 用 path.resolve + 前缀判断：根内合法、前缀陷阱不误判
+ok 31 - canonicalize 用 path.resolve + 前缀判断：根内合法、前缀陷阱不误判
+  ---
+  duration_ms: 0.119625
+  type: 'test'
+  ...
+# Subtest: canonicalize：非绝对 root 属编程错误（TypeError）
+ok 32 - canonicalize：非绝对 root 属编程错误（TypeError）
+  ---
+  duration_ms: 0.06425
+  type: 'test'
+  ...
+# Subtest: rootsMatch：归一化后同目录为 true，不同为 false
+ok 33 - rootsMatch：归一化后同目录为 true，不同为 false
+  ---
+  duration_ms: 0.051292
+  type: 'test'
+  ...
+# Subtest: symlink 场景：字符串层可判的拒绝，不可判的放行（内核 post-check 职责）
+ok 34 - symlink 场景：字符串层可判的拒绝，不可判的放行（内核 post-check 职责）
+  ---
+  duration_ms: 0.141125
+  type: 'test'
+  ...
+# Subtest: 路径输入透析：正常输入保真（中文/空格/emoji 字节不损坏）
+ok 35 - 路径输入透析：正常输入保真（中文/空格/emoji 字节不损坏）
+  ---
+  duration_ms: 0.11975
+  type: 'test'
+  ...
+# Subtest: 限额常量与协议稿 §8 逐值一致
+ok 36 - 限额常量与协议稿 §8 逐值一致
+  ---
+  duration_ms: 0.068209
+  type: 'test'
+  ...
+# Subtest: 限额关系断言（防笔误）
+ok 37 - 限额关系断言（防笔误）
+  ---
+  duration_ms: 0.039334
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 37
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 69.698125

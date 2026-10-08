@@ -1,0 +1,16 @@
+{
+  "name": "dsh-devtunnel-ssh",
+  "version": "0.0.1-experimental",
+  "description": "Experimental independent Dev Tunnel SSH carrier plugin; manual first, ordinary workspace integration gated",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js" },
+  "files": ["lib", "cordis.patch.yml", "README.md", "MANUAL.md"],
+  "dependencies": { "@deepseek-ai/schemastery": "^3.18.2" },
+  "peerDependencies": { "dsh-remote": "*", "@deepseek-ai/cordis": "^4.0.1" },
+  "peerDependenciesMeta": { "dsh-remote": { "optional": true } },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "scripts": { "test": "node --test test/*.test.mjs" }
+}

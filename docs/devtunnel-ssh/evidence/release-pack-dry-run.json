@@ -1,0 +1,76 @@
+[
+  {
+    "id": "dsh-devtunnel-ssh@0.0.1-experimental",
+    "name": "dsh-devtunnel-ssh",
+    "version": "0.0.1-experimental",
+    "size": 11561,
+    "unpackedSize": 33106,
+    "shasum": "86b0ee8eb7c046bd61f0778d515a554293a01f06",
+    "integrity": "sha512-QGKkEUwJ28BvtCm+wvhuDnIBA3OEjpZNjXGDGm38Jm+27dvwKP4R3OyxFGX2mGzCifYoWSjEEPI8YnSyved8dw==",
+    "filename": "dsh-devtunnel-ssh-0.0.1-experimental.tgz",
+    "files": [
+      {
+        "path": "README.md",
+        "size": 1591,
+        "mode": 384
+      },
+      {
+        "path": "cordis.patch.yml",
+        "size": 139,
+        "mode": 384
+      },
+      {
+        "path": "lib/carrier.js",
+        "size": 5817,
+        "mode": 384
+      },
+      {
+        "path": "lib/cli-policy.js",
+        "size": 1840,
+        "mode": 384
+      },
+      {
+        "path": "lib/index.js",
+        "size": 1365,
+        "mode": 384
+      },
+      {
+        "path": "lib/lease-manager.js",
+        "size": 7473,
+        "mode": 384
+      },
+      {
+        "path": "lib/managed-connect.js",
+        "size": 5191,
+        "mode": 384
+      },
+      {
+        "path": "lib/output-parser.js",
+        "size": 1805,
+        "mode": 384
+      },
+      {
+        "path": "lib/owned-process.js",
+        "size": 2073,
+        "mode": 384
+      },
+      {
+        "path": "lib/prerequisites.js",
+        "size": 4003,
+        "mode": 384
+      },
+      {
+        "path": "lib/registration.js",
+        "size": 1170,
+        "mode": 384
+      },
+      {
+        "path": "package.json",
+        "size": 639,
+        "mode": 384
+      }
+    ],
+    "entryCount": 12,
+    "bundled": []
+  }
+]

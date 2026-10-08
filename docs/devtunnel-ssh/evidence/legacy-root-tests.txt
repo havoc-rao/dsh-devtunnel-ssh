@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: openPty：真实 Worker 终端会话 —— 输出/输入/resize/signal/end 全链路
+ok 1 - openPty：真实 Worker 终端会话 —— 输出/输入/resize/signal/end 全链路
+  ---
+  duration_ms: 1639.146084
+  type: 'test'
+  ...
+# Subtest: openPty：revoke 后创建会话被拒（token 失效）
+ok 2 - openPty：revoke 后创建会话被拒（token 失效）
+  ---
+  duration_ms: 8.547667
+  type: 'test'
+  ...
+# Subtest: openPty：term 能力关闭 → CAPABILITY_UNSUPPORTED
+ok 3 - openPty：term 能力关闭 → CAPABILITY_UNSUPPORTED
+  ---
+  duration_ms: 5.296708
+  type: 'test'
+  ...
+# Subtest: openPty：cwd 越界 → ROOT_NOT_ALLOWED；非路径输入合法
+ok 4 - openPty：cwd 越界 → ROOT_NOT_ALLOWED；非路径输入合法
+  ---
+  duration_ms: 5.020708
+  type: 'test'
+  ...
+# Subtest: provider.connect：配对 + RemoteFS 写读 + stat + mkdir + list
+ok 5 - provider.connect：配对 + RemoteFS 写读 + stat + mkdir + list
+  ---
+  duration_ms: 74.92875
+  type: 'test'
+  ...
+# Subtest: provider.exec：成功 / 失败退出码 / PTY 门禁拒绝 / 断连后 revoke
+ok 6 - provider.exec：成功 / 失败退出码 / PTY 门禁拒绝 / 断连后 revoke
+  ---
+  duration_ms: 441.91675
+  type: 'test'
+  ...
+# Subtest: provider：非 loopback host 拒绝
+ok 7 - provider：非 loopback host 拒绝
+  ---
+  duration_ms: 0.614458
+  type: 'test'
+  ...
+# Subtest: connectCompat 兼容表面：detect() 从 Worker /v1/info 解析 platform，幂等
+ok 8 - connectCompat 兼容表面：detect() 从 Worker /v1/info 解析 platform，幂等
+  ---
+  duration_ms: 10.068583
+  type: 'test'
+  ...
+# Subtest: connectCompat 兼容表面：detect() 在 Worker 失效后不抛（platform 保持 unknown）
+ok 9 - connectCompat 兼容表面：detect() 在 Worker 失效后不抛（platform 保持 unknown）
+  ---
+  duration_ms: 9.08225
+  type: 'test'
+  ...
+# Subtest: provider fs：SSH 式绝对路径自动映射到授权根（browse 根目录场景）
+ok 10 - provider fs：SSH 式绝对路径自动映射到授权根（browse 根目录场景）
+  ---
+  duration_ms: 47.660291
+  type: 'test'
+  ...
+# Subtest: provider.validateMachine/sanitizeMachine
+ok 11 - provider.validateMachine/sanitizeMachine
+  ---
+  duration_ms: 0.700875
+  type: 'test'
+  ...
+# Subtest: endpoint policy rejects non-loopback, URL credentials and invalid ports
+ok 12 - endpoint policy rejects non-loopback, URL credentials and invalid ports
+  ---
+  duration_ms: 1.455042
+  type: 'test'
+  ...
+# Subtest: LOCAL ONLY: authentication, JSON and 8 MiB hash roundtrip
+ok 13 - LOCAL ONLY: authentication, JSON and 8 MiB hash roundtrip
+  ---
+  duration_ms: 154.395459
+  type: 'test'
+  ...
+# Subtest: LOCAL ONLY: malformed JSON, content type, unknown route, wrong length
+ok 14 - LOCAL ONLY: malformed JSON, content type, unknown route, wrong length
+  ---
+  duration_ms: 7.536417
+  type: 'test'
+  ...
+# Subtest: LOCAL ONLY: port collision does not select another port; restart changes identity
+ok 15 - LOCAL ONLY: port collision does not select another port; restart changes identity
+  ---
+  duration_ms: 1.600875
+  type: 'test'
+  ...
+# Subtest: LOCAL ONLY: HTTP redirect is returned without following target
+ok 16 - LOCAL ONLY: HTTP redirect is returned without following target
+  ---
+  duration_ms: 3.239125
+  type: 'test'
+  ...
+# Subtest: LOCAL ONLY: total request deadline is bounded
+ok 17 - LOCAL ONLY: total request deadline is bounded
+  ---
+  duration_ms: 53.369666
+  type: 'test'
+  ...
+# Subtest: requestDeadlineMs：小 body 保持默认，大 body 按 10 KiB/s 外推且单调
+ok 18 - requestDeadlineMs：小 body 保持默认，大 body 按 10 KiB/s 外推且单调
+  ---
+  duration_ms: 1.124292
+  type: 'test'
+  ...
+# Subtest: socket hang up（ECONNRESET）→ TRANSPORT_RESET；幂等读取自动重试 2 次后成功
+ok 19 - socket hang up（ECONNRESET）→ TRANSPORT_RESET；幂等读取自动重试 2 次后成功
+  ---
+  duration_ms: 681.589708
+  type: 'test'
+  ...
+# Subtest: 响应中途掐断（半截 body）→ 也归为 TRANSPORT_RESET，幂等重试后成功
+ok 20 - 响应中途掐断（半截 body）→ 也归为 TRANSPORT_RESET，幂等重试后成功
+  ---
+  duration_ms: 562.532875
+  type: 'test'
+  ...
+# Subtest: 写入类请求（非幂等）绝不自动重放：首次 TRANSPORT_RESET 即抛，无重试
+ok 21 - 写入类请求（非幂等）绝不自动重放：首次 TRANSPORT_RESET 即抛，无重试
+  ---
+  duration_ms: 7.304708
+  type: 'test'
+  ...
+# Subtest: 配对（pair）不自动重试：TRANSPORT_RESET 直接抛给上层
+ok 22 - 配对（pair）不自动重试：TRANSPORT_RESET 直接抛给上层
+  ---
+  duration_ms: 8.338625
+  type: 'test'
+  ...
+# Subtest: ECONNREFUSED → TUNNEL_UNREACHABLE（retryable=false），幂等标记也不重试
+ok 23 - ECONNREFUSED → TUNNEL_UNREACHABLE（retryable=false），幂等标记也不重试
+  ---
+  duration_ms: 3.419458
+  type: 'test'
+  ...
+# Subtest: 客户端 deadline：卡死服务 → BRIDGE_REQUEST_DEADLINE（outcomeKnown=false，不重试）
+ok 24 - 客户端 deadline：卡死服务 → BRIDGE_REQUEST_DEADLINE（outcomeKnown=false，不重试）
+  ---
+  duration_ms: 252.669667
+  type: 'test'
+  ...
+# Subtest: classifyTransportError：未知/业务错误原样透传（不误分类 envelope 错误）
+ok 25 - classifyTransportError：未知/业务错误原样透传（不误分类 envelope 错误）
+  ---
+  duration_ms: 0.420833
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 15408.793708

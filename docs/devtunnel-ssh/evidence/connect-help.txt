@@ -1,0 +1,16 @@
+Description:
+  Connect to an existing tunnel
+
+Usage:
+  devtunnel connect [<tunnel-id>] [options]
+
+Arguments:
+  <tunnel-id>  Tunnel ID (default is last used tunnel)
+
+Options:
+  -t, --access-token <access-token>  Authenticate with the provided token (- to read from stdin)
+  -v, --verbose                      Enable verbose output
+  -?, -h, --help                     Show help and usage information
+
+
+

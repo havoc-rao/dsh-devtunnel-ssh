@@ -1,0 +1,24 @@
+Description:
+  Create a tunnel port
+
+Usage:
+  devtunnel port create [<tunnel-id>] [options]
+
+Arguments:
+  <tunnel-id>  Tunnel ID (default is last used tunnel)
+
+Options:
+  -p, --port-number <port-number> (REQUIRED)  Tunnel port number
+  --protocol <protocol>                       Tunnel port protocol: 'http', 'https', or 'auto' (default)
+  -d, --description <description>             Port description
+  -l, --labels <labels>                       Port labels
+  --host-header <host-header>                 Host header value to rewrite in requests forwarded from a web client. Use "unchanged" to keep the original header, By default Host header is changed to "localhost".
+  --origin-header <origin-header>             Origin header value to rewrite in requests forwarded from a web client. Use "unchanged" to keep the original header. By default Origin header is changed to "http(s)://localhost"
+  --request-timeout <request-timeout>         Timeout seconds for web requests (0=disabled)
+  -j, --json                                  Enable json output format
+  -t, --access-token <access-token>           Authenticate with the provided token (- to read from stdin)
+  -v, --verbose                               Enable verbose output
+  -?, -h, --help                              Show help and usage information
+
+
+

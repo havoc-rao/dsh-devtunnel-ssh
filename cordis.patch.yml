@@ -1,0 +1,4 @@
+# Independent experimental bundle; never replaces dsh-remote-vscode.
+- insert:
+    - id: dsh-devtunnel-ssh
+      name: 'dsh-devtunnel-ssh'

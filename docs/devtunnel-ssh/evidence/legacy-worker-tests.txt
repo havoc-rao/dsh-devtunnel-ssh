@@ -1,0 +1,238 @@
+TAP version 13
+# Subtest: WorkerManager.start：stdin 秘密注入 + READY + machineId 透传
+ok 1 - WorkerManager.start：stdin 秘密注入 + READY + machineId 透传
+  ---
+  duration_ms: 75.584667
+  type: 'test'
+  ...
+# Subtest: WorkerManager.stop：SIGTERM 终止，无孤儿残留
+ok 2 - WorkerManager.stop：SIGTERM 终止，无孤儿残留
+  ---
+  duration_ms: 372.564875
+  type: 'test'
+  ...
+# Subtest: 父进程租约：parent 退出后 worker 自灭（--parent-pid）
+ok 3 - 父进程租约：parent 退出后 worker 自灭（--parent-pid）
+  ---
+  duration_ms: 5126.522208
+  type: 'test'
+  ...
+# Subtest: 越界：.. 段与绝对路径拒绝
+ok 4 - 越界：.. 段与绝对路径拒绝
+  ---
+  duration_ms: 6.793875
+  type: 'test'
+  ...
+# Subtest: symlink 逃逸：写拒绝、读拒绝
+ok 5 - symlink 逃逸：写拒绝、读拒绝
+  ---
+  duration_ms: 4.885167
+  type: 'test'
+  ...
+# Subtest: 空文件写入读取
+ok 6 - 空文件写入读取
+  ---
+  duration_ms: 5.580958
+  type: 'test'
+  ...
+# Subtest: 二进制含 NUL 往返
+ok 7 - 二进制含 NUL 往返
+  ---
+  duration_ms: 3.982917
+  type: 'test'
+  ...
+# Subtest: 中文+空格路径
+ok 8 - 中文+空格路径
+  ---
+  duration_ms: 5.21275
+  type: 'test'
+  ...
+# Subtest: expectedRevision 冲突 → FILE_CONFLICT
+ok 9 - expectedRevision 冲突 → FILE_CONFLICT
+  ---
+  duration_ms: 9.537167
+  type: 'test'
+  ...
+# Subtest: expectedAbsent 已存在 → FILE_CONFLICT
+ok 10 - expectedAbsent 已存在 → FILE_CONFLICT
+  ---
+  duration_ms: 3.542
+  type: 'test'
+  ...
+# Subtest: append requestId 幂等
+ok 11 - append requestId 幂等
+  ---
+  duration_ms: 5.314083
+  type: 'test'
+  ...
+# Subtest: 原子性：写后无 tmp 残留
+ok 12 - 原子性：写后无 tmp 残留
+  ---
+  duration_ms: 5.262125
+  type: 'test'
+  ...
+# Subtest: 并发写同一路径串行不交错
+ok 13 - 并发写同一路径串行不交错
+  ---
+  duration_ms: 8.403916
+  type: 'test'
+  ...
+# Subtest: list 分页
+ok 14 - list 分页
+  ---
+  duration_ms: 41.109666
+  type: 'test'
+  ...
+# Subtest: 文件超 maxFileBytes → LIMIT_EXCEEDED
+ok 15 - 文件超 maxFileBytes → LIMIT_EXCEEDED
+  ---
+  duration_ms: 1.452416
+  type: 'test'
+  ...
+# Subtest: readOnly 拒绝写类操作
+ok 16 - readOnly 拒绝写类操作
+  ---
+  duration_ms: 1.236125
+  type: 'test'
+  ...
+# Subtest: 目录删除需 recursive；rename 越界拒绝
+ok 17 - 目录删除需 recursive；rename 越界拒绝
+  ---
+  duration_ms: 3.862417
+  type: 'test'
+  ...
+# Subtest: 空目录可非 recursive 删除（rmdir 语义，协议 §5.3）
+ok 18 - 空目录可非 recursive 删除（rmdir 语义，协议 §5.3）
+  ---
+  duration_ms: 2.953916
+  type: 'test'
+  ...
+# Subtest: 无鉴权 401 / 错 token 拒绝
+ok 19 - 无鉴权 401 / 错 token 拒绝
+  ---
+  duration_ms: 19.865583
+  type: 'test'
+  ...
+# Subtest: pair 一次消费；第二次 PAIR_EXPIRED
+ok 20 - pair 一次消费；第二次 PAIR_EXPIRED
+  ---
+  duration_ms: 8.27
+  type: 'test'
+  ...
+# Subtest: info 返回正确 identity/roots/capabilities
+ok 21 - info 返回正确 identity/roots/capabilities
+  ---
+  duration_ms: 7.504583
+  type: 'test'
+  ...
+# Subtest: fs write→read 往返（中文路径）
+ok 22 - fs write→read 往返（中文路径）
+  ---
+  duration_ms: 16.152
+  type: 'test'
+  ...
+# Subtest: 越界 403 ROOT_NOT_ALLOWED
+ok 23 - 越界 403 ROOT_NOT_ALLOWED
+  ---
+  duration_ms: 3.95525
+  type: 'test'
+  ...
+# Subtest: 未知路由 404 + 方法不允许
+ok 24 - 未知路由 404 + 方法不允许
+  ---
+  duration_ms: 4.07525
+  type: 'test'
+  ...
+# Subtest: Host 伪造 403
+ok 25 - Host 伪造 403
+  ---
+  duration_ms: 3.211458
+  type: 'test'
+  ...
+# Subtest: job：创建→轮询→succeeded→output 有内容
+ok 26 - job：创建→轮询→succeeded→output 有内容
+  ---
+  duration_ms: 113.108
+  type: 'test'
+  ...
+# Subtest: job：timeout → timed_out（outcomeKnown 语义）
+ok 27 - job：timeout → timed_out（outcomeKnown 语义）
+  ---
+  duration_ms: 313.684417
+  type: 'test'
+  ...
+# Subtest: revoke 后 token 失效
+ok 28 - revoke 后 token 失效
+  ---
+  duration_ms: 5.608583
+  type: 'test'
+  ...
+# Subtest: 日志不泄露 token/secret 值
+ok 29 - 日志不泄露 token/secret 值
+  ---
+  duration_ms: 4.66175
+  type: 'test'
+  ...
+# Subtest: 终端：创建→输入→PTY 输出回显（真实 shell）
+ok 30 - 终端：创建→输入→PTY 输出回显（真实 shell）
+  ---
+  duration_ms: 281.746083
+  type: 'test'
+  ...
+# Subtest: 终端：resize 生效 + signal 信号名白名单拒绝
+ok 31 - 终端：resize 生效 + signal 信号名白名单拒绝
+  ---
+  duration_ms: 265.7125
+  type: 'test'
+  ...
+# Subtest: 终端：signal KILL 终止 sleep → exited + 退出码
+ok 32 - 终端：signal KILL 终止 sleep → exited + 退出码
+  ---
+  duration_ms: 1116.445167
+  type: 'test'
+  ...
+# Subtest: 终端：close 后 output → NOT_FOUND（立即回收）
+ok 33 - 终端：close 后 output → NOT_FOUND（立即回收）
+  ---
+  duration_ms: 260.811875
+  type: 'test'
+  ...
+# Subtest: 终端：能力门禁（term 关闭）→ CAPABILITY_UNSUPPORTED
+ok 34 - 终端：能力门禁（term 关闭）→ CAPABILITY_UNSUPPORTED
+  ---
+  duration_ms: 3.759083
+  type: 'test'
+  ...
+# Subtest: 终端：cwd 越出授权根 → ROOT_NOT_ALLOWED
+ok 35 - 终端：cwd 越出授权根 → ROOT_NOT_ALLOWED
+  ---
+  duration_ms: 3.132625
+  type: 'test'
+  ...
+# Subtest: 终端：会话数上限（4）→ LIMIT_EXCEEDED；close 释放后可再建
+ok 36 - 终端：会话数上限（4）→ LIMIT_EXCEEDED；close 释放后可再建
+  ---
+  duration_ms: 1289.175917
+  type: 'test'
+  ...
+# Subtest: 终端：输入帧超限 → PAYLOAD_TOO_LARGE
+ok 37 - 终端：输入帧超限 → PAYLOAD_TOO_LARGE
+  ---
+  duration_ms: 263.444083
+  type: 'test'
+  ...
+# Subtest: 终端：revoke 后 token 失效且会话关闭
+ok 38 - 终端：revoke 后 token 失效且会话关闭
+  ---
+  duration_ms: 264.302083
+  type: 'test'
+  ...
+1..38
+# tests 38
+# suites 0
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5628.182042

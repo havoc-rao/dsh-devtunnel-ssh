@@ -1,0 +1,406 @@
+TAP version 13
+# Subtest: actual parent registry validates independent external lease and preserves SSH machine fields
+ok 1 - actual parent registry validates independent external lease and preserves SSH machine fields
+  ---
+  duration_ms: 1.078458
+  type: 'test'
+  ...
+# Subtest: actual registry rejects mixed config, wrong transport and unknown connector fields
+ok 2 - actual registry rejects mixed config, wrong transport and unknown connector fields
+  ---
+  duration_ms: 0.533542
+  type: 'test'
+  ...
+# Subtest: external defaults manual; dynamic port is not logical identity; release never kills CLI
+ok 3 - external defaults manual; dynamic port is not logical identity; release never kills CLI
+  ---
+  duration_ms: 1.034458
+  type: 'test'
+  ...
+# Subtest: machine isolation, active configuration change refusal and abort
+ok 4 - machine isolation, active configuration change refusal and abort
+  ---
+  duration_ms: 0.278083
+  type: 'test'
+  ...
+# Subtest: managed singleflight refcount and owns only injected start
+ok 5 - managed singleflight refcount and owns only injected start
+  ---
+  duration_ms: 0.22475
+  type: 'test'
+  ...
+# Subtest: managed invalid endpoint cleans owned handle; cleanup failure blocks subsequent starts
+ok 6 - managed invalid endpoint cleans owned handle; cleanup failure blocks subsequent starts
+  ---
+  duration_ms: 1.862792
+  type: 'test'
+  ...
+# Subtest: managed process adapter composes with proposed carrier lease contract
+ok 7 - managed process adapter composes with proposed carrier lease contract
+  ---
+  duration_ms: 1.993166
+  type: 'test'
+  ...
+# Subtest: one cancelled concurrent acquire does not abort another owners shared startup
+ok 8 - one cancelled concurrent acquire does not abort another owners shared startup
+  ---
+  duration_ms: 1.068541
+  type: 'test'
+  ...
+# Subtest: dispose during managed startup cleans late handle and does not hand out stale lease
+ok 9 - dispose during managed startup cleans late handle and does not hand out stale lease
+  ---
+  duration_ms: 0.668042
+  type: 'test'
+  ...
+# Subtest: strict connector denies secrets, anonymous, wildcard, and managed endpoint
+ok 10 - strict connector denies secrets, anonymous, wildcard, and managed endpoint
+  ---
+  duration_ms: 0.147666
+  type: 'test'
+  ...
+# Subtest: CLI argv uses exact explicit target, no shell, no guessed remap
+ok 11 - CLI argv uses exact explicit target, no shell, no guessed remap
+  ---
+  duration_ms: 1.762
+  type: 'test'
+  ...
+# Subtest: reject tokens, anonymous switches, remap and implicit target
+ok 12 - reject tokens, anonymous switches, remap and implicit target
+  ---
+  duration_ms: 0.895791
+  type: 'test'
+  ...
+# Subtest: reject trailing line terminators rather than accepting dollar-anchor suffix
+ok 13 - reject trailing line terminators rather than accepting dollar-anchor suffix
+  ---
+  duration_ms: 0.78225
+  type: 'test'
+  ...
+# Subtest: reject malformed configs without invoking accessors or exposing raw failures
+ok 14 - reject malformed configs without invoking accessors or exposing raw failures
+  ---
+  duration_ms: 0.439875
+  type: 'test'
+  ...
+# Subtest: public status cannot contain CLI errors or claim trusted SSH readiness
+ok 15 - public status cannot contain CLI errors or claim trusted SSH readiness
+  ---
+  duration_ms: 0.096166
+  type: 'test'
+  ...
+# Subtest: actual factory forces pin/logical trust and closes pool before adapter lease release
+ok 16 - actual factory forces pin/logical trust and closes pool before adapter lease release
+  ---
+  duration_ms: 1.983167
+  type: 'test'
+  ...
+# Subtest: factory pin required and disposed carrier invalidates pool without resurrecting endpoint
+ok 17 - factory pin required and disposed carrier invalidates pool without resurrecting endpoint
+  ---
+  duration_ms: 0.246875
+  type: 'test'
+  ...
+# Subtest: concurrent acquire starts once, snapshots target, refcounts and idempotent release
+ok 18 - concurrent acquire starts once, snapshots target, refcounts and idempotent release
+  ---
+  duration_ms: 3.86075
+  type: 'test'
+  ...
+# Subtest: release/dispose race closes exactly once and waits for owned cleanup
+ok 19 - release/dispose race closes exactly once and waits for owned cleanup
+  ---
+  duration_ms: 1.419
+  type: 'test'
+  ...
+# Subtest: dispose invalidates all references, without touching another manager
+ok 20 - dispose invalidates all references, without touching another manager
+  ---
+  duration_ms: 0.196834
+  type: 'test'
+  ...
+# Subtest: dispose during inflight start closes the late result and rejects every pending lease
+ok 21 - dispose during inflight start closes the late result and rejects every pending lease
+  ---
+  duration_ms: 0.578458
+  type: 'test'
+  ...
+# Subtest: dispose before start scheduling prevents any allocation
+ok 22 - dispose before start scheduling prevents any allocation
+  ---
+  duration_ms: 0.559792
+  type: 'test'
+  ...
+# Subtest: invalid endpoint rejects and cleans up each returned resource
+ok 23 - invalid endpoint rejects and cleans up each returned resource
+  ---
+  duration_ms: 1.652458
+  type: 'test'
+  ...
+# Subtest: acquire while last-release cleanup is pending fails closed, then explicit acquire starts fresh
+ok 24 - acquire while last-release cleanup is pending fails closed, then explicit acquire starts fresh
+  ---
+  duration_ms: 0.451834
+  type: 'test'
+  ...
+# Subtest: literal IPv6 loopback is accepted
+ok 25 - literal IPv6 loopback is accepted
+  ---
+  duration_ms: 0.207541
+  type: 'test'
+  ...
+# Subtest: start failure is sanitized, shared, retryable explicitly, and never automatically retried
+ok 26 - start failure is sanitized, shared, retryable explicitly, and never automatically retried
+  ---
+  duration_ms: 3.958834
+  type: 'test'
+  ...
+# Subtest: resolved or rejected closed signal permanently invalidates old leases without replay
+ok 27 - resolved or rejected closed signal permanently invalidates old leases without replay
+  ---
+  duration_ms: 1.300792
+  type: 'test'
+  ...
+# Subtest: already closed start result never produces a usable lease
+ok 28 - already closed start result never produces a usable lease
+  ---
+  duration_ms: 0.218709
+  type: 'test'
+  ...
+# Subtest: identity isolation, changed-target refusal persists after release and failed start
+ok 29 - identity isolation, changed-target refusal persists after release and failed start
+  ---
+  duration_ms: 0.249125
+  type: 'test'
+  ...
+# Subtest: strict target validation rejects missing, extra, coercible and accessor values before start
+ok 30 - strict target validation rejects missing, extra, coercible and accessor values before start
+  ---
+  duration_ms: 0.288083
+  type: 'test'
+  ...
+# Subtest: malformed readiness and throwing endpoint getter still clean up owned resources
+ok 31 - malformed readiness and throwing endpoint getter still clean up owned resources
+  ---
+  duration_ms: 0.131625
+  type: 'test'
+  ...
+# Subtest: cleanup failure is explicit and sanitized, close is not retried
+ok 32 - cleanup failure is explicit and sanitized, close is not retried
+  ---
+  duration_ms: 0.10575
+  type: 'test'
+  ...
+# Subtest: composed process ownership waits until last lease and confirms exit
+ok 33 - composed process ownership waits until last lease and confirms exit
+  ---
+  duration_ms: 1.219917
+  type: 'test'
+  ...
+# Subtest: unconfirmed process exit poisons manager instead of reopening a possibly occupied endpoint
+ok 34 - unconfirmed process exit poisons manager instead of reopening a possibly occupied endpoint
+  ---
+  duration_ms: 12.981417
+  type: 'test'
+  ...
+# Subtest: spawn is explicit and safe; first forwarding endpoint closes once
+ok 35 - spawn is explicit and safe; first forwarding endpoint closes once
+  ---
+  duration_ms: 1.480458
+  type: 'test'
+  ...
+# Subtest: abort before spawn and asynchronous abort are fail closed
+ok 36 - abort before spawn and asynchronous abort are fail closed
+  ---
+  duration_ms: 0.468083
+  type: 'test'
+  ...
+# Subtest: ready is invalidated after abort and process exit
+ok 37 - ready is invalidated after abort and process exit
+  ---
+  duration_ms: 0.264125
+  type: 'test'
+  ...
+# Subtest: output immediately followed by exit cannot resolve stale ready
+ok 38 - output immediately followed by exit cannot resolve stale ready
+  ---
+  duration_ms: 0.159083
+  type: 'test'
+  ...
+# Subtest: wrong remote port times out; bounded TERM/KILL cleanup with no retry
+ok 39 - wrong remote port times out; bounded TERM/KILL cleanup with no retry
+  ---
+  duration_ms: 37.280709
+  type: 'test'
+  ...
+# Subtest: unconfirmed exit reports bounded cleanup failure
+ok 40 - unconfirmed exit reports bounded cleanup failure
+  ---
+  duration_ms: 17.97175
+  type: 'test'
+  ...
+# Subtest: close after ready rejects unconfirmed cleanup, without exposing raw errors
+ok 41 - close after ready rejects unconfirmed cleanup, without exposing raw errors
+  ---
+  duration_ms: 12.127625
+  type: 'test'
+  ...
+# Subtest: spawn errors are redacted including thrown secrets
+ok 42 - spawn errors are redacted including thrown secrets
+  ---
+  duration_ms: 0.318083
+  type: 'test'
+  ...
+# Subtest: split streams never assemble readiness; oversized output cleans child
+ok 43 - split streams never assemble readiness; oversized output cleans child
+  ---
+  duration_ms: 30.98775
+  type: 'test'
+  ...
+# Subtest: tail finish can report ready, and invalid options never spawn
+ok 44 - tail finish can report ready, and invalid options never spawn
+  ---
+  duration_ms: 0.547792
+  type: 'test'
+  ...
+# Subtest: dynamic local port is selected by remote port across arbitrary chunks
+ok 45 - dynamic local port is selected by remote port across arbitrary chunks
+  ---
+  duration_ms: 0.97375
+  type: 'test'
+  ...
+# Subtest: IPv6 and changed automatic local mapping are supported
+ok 46 - IPv6 and changed automatic local mapping are supported
+  ---
+  duration_ms: 0.111583
+  type: 'test'
+  ...
+# Subtest: wildcard, invalid ports, unknown forwarding grammar and huge lines fail closed
+ok 47 - wildcard, invalid ports, unknown forwarding grammar and huge lines fail closed
+  ---
+  duration_ms: 0.830667
+  type: 'test'
+  ...
+# Subtest: cumulative output bound, no raw secret in errors
+ok 48 - cumulative output bound, no raw secret in errors
+  ---
+  duration_ms: 0.180125
+  type: 'test'
+  ...
+# Subtest: close is single-flight and signals only the supplied handle
+ok 49 - close is single-flight and signals only the supplied handle
+  ---
+  duration_ms: 0.9195
+  type: 'test'
+  ...
+# Subtest: already exited process is never signalled
+ok 50 - already exited process is never signalled
+  ---
+  duration_ms: 1.051167
+  type: 'test'
+  ...
+# Subtest: TERM escalates once to KILL and waits for confirmed exit
+ok 51 - TERM escalates once to KILL and waits for confirmed exit
+  ---
+  duration_ms: 5.931958
+  type: 'test'
+  ...
+# Subtest: unconfirmed exit fails closed after bounded waits, with no repeated cleanup
+ok 52 - unconfirmed exit fails closed after bounded waits, with no repeated cleanup
+  ---
+  duration_ms: 10.932417
+  type: 'test'
+  ...
+# Subtest: failed exit observation is not success and does not leak raw errors
+ok 53 - failed exit observation is not success and does not leak raw errors
+  ---
+  duration_ms: 0.174917
+  type: 'test'
+  ...
+# Subtest: signal failures are redacted and do not cancel bounded escalation
+ok 54 - signal failures are redacted and do not cancel bounded escalation
+  ---
+  duration_ms: 6.152875
+  type: 'test'
+  ...
+# Subtest: reject invalid handles and unbounded timeout settings
+ok 55 - reject invalid handles and unbounded timeout settings
+  ---
+  duration_ms: 0.453541
+  type: 'test'
+  ...
+# Subtest: default only requests version and help, never login or installation
+ok 56 - default only requests version and help, never login or installation
+  ---
+  duration_ms: 2.0245
+  type: 'test'
+  ...
+# Subtest: login requires explicit boolean opt-in and never exposes identity
+ok 57 - login requires explicit boolean opt-in and never exposes identity
+  ---
+  duration_ms: 0.390291
+  type: 'test'
+  ...
+# Subtest: missing CLI, raw runner failures and unsupported output are sanitized
+ok 58 - missing CLI, raw runner failures and unsupported output are sanitized
+  ---
+  duration_ms: 0.258833
+  type: 'test'
+  ...
+# Subtest: unknown help cannot authorize user show; no timeout retries
+ok 59 - unknown help cannot authorize user show; no timeout retries
+  ---
+  duration_ms: 5.853792
+  type: 'test'
+  ...
+# Subtest: official multiline version extracts one numeric version and discards service output
+ok 60 - official multiline version extracts one numeric version and discards service output
+  ---
+  duration_ms: 0.289542
+  type: 'test'
+  ...
+# Subtest: parser is bounded, strict and only returns allowlisted statuses
+ok 61 - parser is bounded, strict and only returns allowlisted statuses
+  ---
+  duration_ms: 0.144958
+  type: 'test'
+  ...
+# Subtest: invalid inputs never invoke runner and there is no default real runner
+ok 62 - invalid inputs never invoke runner and there is no default real runner
+  ---
+  duration_ms: 0.341
+  type: 'test'
+  ...
+# Subtest: missing or rejecting public carrier API does not break host
+ok 63 - missing or rejecting public carrier API does not break host
+  ---
+  duration_ms: 0.383125
+  type: 'test'
+  ...
+# Subtest: explicit proposed API registration and lifetime disposal
+ok 64 - explicit proposed API registration and lifetime disposal
+  ---
+  duration_ms: 0.61875
+  type: 'test'
+  ...
+# Subtest: optional services absent leaves host intact
+ok 65 - optional services absent leaves host intact
+  ---
+  duration_ms: 0.353292
+  type: 'test'
+  ...
+# Subtest: diagnostic uses valid public command metadata with owned disposer
+ok 66 - diagnostic uses valid public command metadata with owned disposer
+  ---
+  duration_ms: 0.175708
+  type: 'test'
+  ...
+1..66
+# tests 66
+# suites 0
+# pass 66
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 170.917584
