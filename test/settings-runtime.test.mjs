@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSettingsRuntime as createRuntime } from '../lib/settings-runtime.js';
+import { createSettingsRuntime as createRuntime } from '../lib/core/settings-runtime.js';
 const fakeResolver = async ({ override }) => ({ status: 'found', source: override ? 'override' : 'path', resolvedExecutable: override || '/fixture/path/devtunnel' });
 const createSettingsRuntime = options => createRuntime({ resolveCli: fakeResolver, ...options });
-import { createCarrier } from '../lib/carrier.js';
+import { createCarrier } from '../lib/core/carrier.js';
 function storeFixture() {
   let value={settings:{cliExecutable:'/fixture/old',managedEnabled:true},revision:0,source:'config'};
   return { snapshot:async()=>value,save:async(settings,{expectedRevision})=>{

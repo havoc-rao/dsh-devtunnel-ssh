@@ -31,7 +31,7 @@ line3="SSH: Forwarding from 127.0.0.1:62608 to host port 22."
 宿主若从终端启动（`dsh web --profile …`）可直接看到第一行；Desktop(Electron) 启动时宿主 stdout
 被 pipe 到 Electron 主进程，通常要改用浏览器控制台或 `GET /dsh-devtunnel-ssh/diagnostics`。
 
-## 脱敏规则（`lib/connect-diagnostics.js`）
+## 脱敏规则（`lib/util/connect-diagnostics.js`）
 
 原始 CLI 输出**从不**落日志、响应或控制台：
 

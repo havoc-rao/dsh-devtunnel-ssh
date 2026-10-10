@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { startManagedConnect } from '../lib/managed-connect.js';
-import { createConnectDiagnostics } from '../lib/connect-diagnostics.js';
+import { startManagedConnect } from '../lib/core/managed-connect.js';
+import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 const config = { executable: '/fixture/devtunnel', tunnelId: 'fixture.euw', remotePort: 22, startupTimeoutMs: 30, graceMs: 5, killMs: 5 };
 function fixture(action, killExit = 'SIGTERM') {
   const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); child.pid = 42;

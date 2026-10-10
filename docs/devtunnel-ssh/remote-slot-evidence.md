@@ -7,7 +7,7 @@
 
 | 侧 | 文件 | 改动 |
 | --- | --- | --- |
-| dsh-devtunnel-ssh（本仓） | [lib/client.js](../../lib/client.js) | 由 legacy noop/纯 helpers 改为真实浏览器半侧：经 `ctx.slots.inject` 向 `settings.remote.machine.transport.option`(list, id `devtunnel-ssh`, order 10) 与 `settings.remote.machine.transport.fields`(keyed, key `devtunnel-ssh`) 注册类型按钮+不可用提示、通道模式、全部 devtunnel 字段、镜像控件；向 owner `carrier.publish` 发布 `{valid, body}` draft；无任何宿主路由调用 |
+| dsh-devtunnel-ssh（本仓） | [lib/client/client.js](../../lib/client/client.js) | 由 legacy noop/纯 helpers 改为真实浏览器半侧：经 `ctx.slots.inject` 向 `settings.remote.machine.transport.option`(list, id `devtunnel-ssh`, order 10) 与 `settings.remote.machine.transport.fields`(keyed, key `devtunnel-ssh`) 注册类型按钮+不可用提示、通道模式、全部 devtunnel 字段、镜像控件；向 owner `carrier.publish` 发布 `{valid, body}` draft；无任何宿主路由调用 |
 | dsh-devtunnel-ssh（本仓） | [package.json](../../package.json) | 补 `dsh.client = { platform: 'web', inject: [renderer, locale] }`（原先缺失 → 浏览器半侧不会被装载） |
 | dsh-remote（兄弟仓，`session-a3e6194f`） | `lib/client.js` | `settings.section` 条目声明两个 children 并透传 `renderSlot`；SSH 按钮/字段改为自注册条目；删除硬编码 Dev Tunnel 按钮/字段与 `devTunnelFormBody/Valid`，改为 canonical JSON 比较 + `machineCarrierBody` + occupant 发布 draft 的通用提交门控 |
 
@@ -29,7 +29,7 @@
 契约 v2 增加 `settings.remote.machine.transport.panel`（list, root，owner props `{status,machines,currentId,scopeDir,busy}`），
 owner 侧挂载在机器列表卡片与添加/编辑卡片之间（兄弟会话 `session-a3e6194f` 实现，全量 809 PASS / 0 FAIL / 2 SKIP）。
 本仓实现：`carrier.snapshot()/stopManaged()`（活动通道与显式断开）、supervisor `list()`（重试/阻塞状态）、
-runtime `channelSnapshot()/stopManagedChannel()`、新路由 `lib/channels-route.js`（GET 快照+最近事件，POST `{action:'stop',machineId,confirmed:true}`，
+runtime `channelSnapshot()/stopManagedChannel()`、新路由 `lib/routes/channels-route.js`（GET 快照+最近事件，POST `{action:'stop',machineId,confirmed:true}`，
 非 GET/POST 405、校验失败 400、不可用 503，绝不回传 adapter 文本）、浏览器半侧 `DevTunnelPanel`（活动通道/重试阻塞/最近事件三段，
 显式确认后断开、失败不重试、路由未就绪时显示「宿主通道管理不可用」而不是假装为空）。
 新增测试：`channels-route`(3)、carrier(+3，含 `CHANNEL_LEASED/RELEASED/STOPPED` 与抛错 sink)、supervisor(+1)、runtime(+2)、client(+4)、组合(+2)。
@@ -38,7 +38,7 @@ runtime `channelSnapshot()/stopManagedChannel()`、新路由 `lib/channels-route
 
 ### 追加：managed 诊断日志（`CONNECT_OUTPUT_REJECTED` 可见化）
 
-见[managed-connect-diagnostics.md](<managed-connect-diagnostics.md>)。新增 `lib/connect-diagnostics.js`（掩码 + 环形缓冲）、
+见[managed-connect-diagnostics.md](<managed-connect-diagnostics.md>)。新增 `lib/util/connect-diagnostics.js`（掩码 + 环形缓冲）、
 `output-parser` 的 reason 码与 `observe` 观察面、`managed-connect`/`managed-supervisor` 的诊断上报、
 `settings-route` 的只读 `GET /dsh-devtunnel-ssh/diagnostics`、`index.js` 的宿主日志 sink，以及
 浏览器半侧在表单打开期间的诊断镜像（`console.warn('[dsh-devtunnel-ssh] …')`，3s 只读拉取、按 seq 去重）。
@@ -51,7 +51,7 @@ runtime `channelSnapshot()/stopManagedChannel()`、新路由 `lib/channels-route
 
 ## 部署现状（用户要求下已执行 build，未重启 GUI）
 
-- `~/.dsh/profiles/desktop/node_modules/dsh-devtunnel-ssh` → **symlink 到本仓**：`package.json` 的 `dsh.client` 与 `lib/client.js` 已在磁盘生效路径内。
+- `~/.dsh/profiles/desktop/node_modules/dsh-devtunnel-ssh` → **symlink 到本仓**：`package.json` 的 `dsh.client` 与 `lib/client/client.js` 已在磁盘生效路径内。
 - `~/.dsh/profiles/{desktop,web}/node_modules/dsh-remote` → symlink 到 `dsh-remote/dev-harness/deploy-pkg`（**物化部署副本**）。当前运行的 GUI 是 Electron Desktop（`:53872` 监听者），即走 desktop profile。
 - 已执行：`node scripts/build.mjs --target <repo>/dev-harness/deploy-pkg --instrument`（普通 build 只把 symlink 安装判为「已是源码」并跳过，不会更新该物化副本，因此必须显式 `--target`）。结果：`deploy-pkg/lib/client.js` 已更新为槽位化版本（844218 bytes，含 `SLOT_TRANSPORT_OPTION`），dcf 注入版保留（`data-locatorjs` 418 处）；`lib/` 37 文件 + package.json + cordis.patch.yml + LICENSE 同步完成；仓库内 harness 沙箱安装同步更新；`check.mjs` 与 37 文件语法闸门 PASS。
 - **仍需用户重启 Desktop 宿主**：client module 表对「无 `dsh.client`」的否定结论在进程内缓存（`packages/client/modules` 的 `pkgMeta`：negative verdicts remain stable until restart），本插件的 Loader 行在加入 `dsh.client` 之前就被扫描过，因此仅刷新页面不会装载其浏览器半侧；重启宿主后再刷新页面即可。

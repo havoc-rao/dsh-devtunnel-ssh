@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createReact, createSlots, loadClient, nodes, text, findButton, findInput, fingerprint } from './support/slot-harness.mjs'
 
-const source = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
+const source = readFileSync(new URL('../lib/client/client.js', import.meta.url), 'utf8')
 const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 
 const CAPABLE = { sshCarrierCapabilities: { workspaceSupported: true, carrierIds: ['devtunnel'] } }
@@ -33,7 +33,7 @@ test('browser half is declared in the manifest and registered as a classic clien
   for (const dependency of ['@deepseek-ai/dsh-client-ui-renderer', '@deepseek-ai/dsh-client-locale']) {
     assert.ok(manifest.dsh.client.inject.includes(dependency), dependency)
   }
-  assert.equal(manifest.exports['./client'], './lib/client.js')
+  assert.equal(manifest.exports['./client'], './lib/client/client.js')
   const { module } = load()
   assert.equal(module.name, 'dsh-devtunnel-ssh')
   assert.equal(typeof module.apply, 'function')

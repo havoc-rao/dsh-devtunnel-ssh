@@ -3,8 +3,8 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {Readable} from 'node:stream';import {mkdtempSync,mkdirSync,readFileSync} from 'node:fs';import {tmpdir} from 'node:os';import path from 'node:path';
 import * as api from '../../dsh-remote/lib/ssh-carrier.js';
 import {SshPool} from '../../dsh-remote/lib/pool.js';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
-import {detectCapabilities} from '../lib/capabilities.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
+import {detectCapabilities} from '../lib/contracts/capabilities.js';
 const CONFIG={host:'',port:22,username:'',password:'',privateKeyPath:'',passphrase:'',workspace:'',shell:'',commandTimeoutMs:5000,connectTimeoutMs:2000,maxOutputChars:10000,maxFileBytes:100000,hostKeyMode:'off',useAgent:false,keyboardInteractive:false,autoPush:false,auditLog:false,encoding:'utf-8',updateMode:'off',updateCheckIntervalMs:0};
 async function call(route,body,url='/dsh-remote/machines'){
  let output;const req=Object.assign(Readable.from([JSON.stringify(body)]),{method:'POST',url});const res={statusCode:0,setHeader(){},end(s){output=JSON.parse(s);}};await route(req,res);return{status:res.statusCode,body:output};

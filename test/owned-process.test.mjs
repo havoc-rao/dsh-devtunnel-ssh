@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ownProcess } from '../lib/owned-process.js';
+import { ownProcess } from '../lib/util/owned-process.js';
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return { promise, resolve, reject }; };
 const budget = { graceMs: 5, killMs: 5 };
 test('close is single-flight and signals only the supplied handle', async () => {

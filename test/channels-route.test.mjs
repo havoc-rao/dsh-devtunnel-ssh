@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { installChannelsRoute } from '../lib/channels-route.js';
-import { createConnectDiagnostics } from '../lib/connect-diagnostics.js';
+import { installChannelsRoute } from '../lib/routes/channels-route.js';
+import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
 const channel = { machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 };
 const supervisor = [{ tunnelId: 'other.jpe1', remotePort: 22, active: false, pending: false, failures: 2, blocked: null, cooldownUntil: 1760000005000 }];

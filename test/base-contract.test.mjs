@@ -1,7 +1,7 @@
 // Read-only integration against the actual parent registry source. No SSH/network.
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as api from '../../dsh-remote/lib/ssh-carrier.js';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
 const machine=()=>({id:'mac-contract',transport:'ssh',expectedHostFingerprint:'SHA256:fixture-only',connector:{kind:'devtunnel',tunnelId:'fixture.jpe1',remotePort:22,endpoint:{host:'127.0.0.1',port:50736}}});
 test('actual parent registry validates independent external lease and preserves SSH machine fields',async()=>{
  const registration=registerCarrierWhenAvailable(api);

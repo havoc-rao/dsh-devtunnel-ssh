@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {targetIdentity,createCarrier} from '../lib/carrier.js';
+import {targetIdentity,createCarrier} from '../lib/core/carrier.js';
 const connector={kind:'devtunnel',tunnelId:'fixture.jpe1',remotePort:22,endpoint:{host:'127.0.0.1',port:50736}};
 test('pure canonical descriptor excludes transient endpoint and managed mode',()=>{
  const identity=targetIdentity(connector);

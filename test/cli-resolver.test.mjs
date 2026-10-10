@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, chmod, symlink, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, delimiter } from 'node:path';
-import { resolveCliExecutable } from '../lib/cli-resolver.js';
+import { resolveCliExecutable } from '../lib/util/cli-resolver.js';
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'devtunnel-resolver-'));

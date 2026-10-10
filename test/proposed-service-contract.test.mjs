@@ -1,6 +1,6 @@
 // Proposed service shape only; not wired into entry until base publishes contract.
 import test from 'node:test';import assert from 'node:assert/strict';import {createRequire} from 'node:module';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
 const require=createRequire(new URL('../../dsh-remote/package.json',import.meta.url));const {Context}=require('@deepseek-ai/cordis');
 const tick=()=>new Promise(r=>setImmediate(r));
 test('actual Cordis reactive injection follows late provider and replacement namespace',async()=>{

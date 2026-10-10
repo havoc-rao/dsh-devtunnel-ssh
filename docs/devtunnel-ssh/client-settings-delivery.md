@@ -2,7 +2,7 @@
 
 核实公开实际契约：兄弟dsh-remote classic client使用window.__ModuleLoader__.load({id,factory(require)})、require('react')、slots.inject/register settings.section，manifest client export/dsh.client.inject web；本插件同样实现，不静态import底座私有模块。核实兄弟API helper按web同源fetch、dsh-app加/api前缀，不在请求中读cookie或token；宿主web scaffold说明正式登录交换session cookie（本插件不执行/读取交换秘密）。
 
-新增[client.js](<../../packages/devtunnel-ssh/lib/client.js>)：独立Dev Tunnel SSH设置区，真实status instance opt-in gate，前提人工确认，stable id/name/B username、explicitTunnel/remotePort、独立SHA256 pin、agent-only、当前IPv4/IPv6端口，external add/update；编辑锁目标/pin/id不原地换信任。machines列表/delete确认、fresh test-connect、明确remotePath+local workspace后mirror确认。保存不激活；hostless descriptor；无密码/token、无managed启动、无自动Config opt-in、无mutation retry。
+新增[client.js](<../../packages/devtunnel-ssh/lib/client/client.js>)：独立Dev Tunnel SSH设置区，真实status instance opt-in gate，前提人工确认，stable id/name/B username、explicitTunnel/remotePort、独立SHA256 pin、agent-only、当前IPv4/IPv6端口，external add/update；编辑锁目标/pin/id不原地换信任。machines列表/delete确认、fresh test-connect、明确remotePath+local workspace后mirror确认。保存不激活；hostless descriptor；无密码/token、无managed启动、无自动Config opt-in、无mutation retry。
 
 API封闭路由允许list，同源credentials和redirect:error；401/403显示正常登录要求，不绕认证/读缓存。错误仅固定公共消息；React文本渲染无innerHTML。前提诊断目前人工checkbox+真实能力/fresh probe，不读取CLI登录cache；实际CLI诊断runner仍待受控host接线。
 

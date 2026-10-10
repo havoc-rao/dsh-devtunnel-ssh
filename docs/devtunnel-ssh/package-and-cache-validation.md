@@ -2,7 +2,7 @@
 
 已核实root旧package/cordis patch布局和命令注册契约，新增独立包[manifest](<../../packages/devtunnel-ssh/package.json>)/[patch](<../../packages/devtunnel-ssh/cordis.patch.yml>)，name dsh-devtunnel-ssh，main lib/index.js，dsh.bundle.patch正确；private=true避免误发npm，仍可本地打包装配，未安装到profile。旧Bridgeroot manifest/入口/归档不改。
 
-[入口](<../../packages/devtunnel-ssh/lib/index.js>)动态import已核实公开dsh-remote/lib/ssh-carrier.js，失败返回undefined安全能力缺失；ctx.effect拥有carrier及命令disposer；不会启动CLI/创建机器。默认external，managed代码存在但宿主路径/审批配置尚未装配，不自动启用。peer dsh-remote可选且不编造正式最低版本；仅能力探测。普通工作区ready=false、productionReady=false，已有用户功能证据不放行完整Step0。
+[入口](<../../lib/index.js>)动态import已核实公开dsh-remote/lib/ssh-carrier.js，失败返回undefined安全能力缺失；ctx.effect拥有carrier及命令disposer；不会启动CLI/创建机器。默认external，managed代码存在但宿主路径/审批配置尚未装配，不自动启用。peer dsh-remote可选且不编造正式最低版本；仅能力探测。普通工作区ready=false、productionReady=false，已有用户功能证据不放行完整Step0。
 
 验证：入口fake API加载/缺导出/注册/dispose tests PASS；父侧真实内部cache source+adapter+factory(FakePool)组合验证singleflight、认证revision和端点变化关闭旧pool、显式invalidate、carrierClosed重建；**cache不是包公开runtime依赖**，无真实SSH/PTY。
 

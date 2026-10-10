@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { connectCommand, publicStatus } from '../lib/cli-policy.js';
+import { connectCommand, publicStatus } from '../lib/util/cli-policy.js';
 
 test('CLI argv uses exact explicit target, no shell, no guessed remap', () => {
   const result = connectCommand({ executable: '/approved path/devtunnel', tunnelId: 'test-only.jpe1' });

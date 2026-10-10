@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCarrier } from '../lib/carrier.js';
-import { createManagedStarter } from '../lib/managed-supervisor.js';
+import { createCarrier } from '../lib/core/carrier.js';
+import { createManagedStarter } from '../lib/core/managed-supervisor.js';
 
 const connector = { kind: 'devtunnel', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 };
 

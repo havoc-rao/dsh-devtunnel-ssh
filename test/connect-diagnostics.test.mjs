@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { redactLine, formatDiagnostic, createConnectDiagnostics } from '../lib/connect-diagnostics.js';
+import { redactLine, formatDiagnostic, createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
 test('redaction masks URLs, secret-looking keys, bearer tokens and long runs', () => {
   assert.equal(redactLine('SSH: Forwarding from 127.0.0.1:55981 to host port 22'), 'SSH: Forwarding from 127.0.0.1:55981 to host port 22');

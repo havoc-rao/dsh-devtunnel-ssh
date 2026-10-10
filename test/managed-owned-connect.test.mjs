@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { createCarrier } from '../lib/carrier.js';
-import { startManagedConnect } from '../lib/managed-connect.js';
-import { createManagedStarter } from '../lib/managed-supervisor.js';
+import { createCarrier } from '../lib/core/carrier.js';
+import { startManagedConnect } from '../lib/core/managed-connect.js';
+import { createManagedStarter } from '../lib/core/managed-supervisor.js';
 
 // Full owned CLI adapter composition: no terminal-created listener, real CLI,
 // SSH credential reads, or network. A requested managed lease owns the spawn.

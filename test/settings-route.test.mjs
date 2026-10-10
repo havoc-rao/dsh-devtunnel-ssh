@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { installSettingsRoute, installDiagnosticsRoute } from '../lib/settings-route.js';
-import { createConnectDiagnostics } from '../lib/connect-diagnostics.js';
+import { installSettingsRoute, installDiagnosticsRoute } from '../lib/routes/settings-route.js';
+import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
 const snapshot = { settings: { cliExecutable: '/opt/devtunnel', managedEnabled: true }, revision: 1, source: 'settings', activeManaged: 2, available: true };
 const body = { cliExecutable: '/opt/devtunnel', managedEnabled: true, confirmed: true, disconnectActive: false, revision: 1 };

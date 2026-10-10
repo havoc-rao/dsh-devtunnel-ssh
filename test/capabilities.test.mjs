@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {detectCapabilities} from '../lib/capabilities.js';
+import {detectCapabilities} from '../lib/contracts/capabilities.js';
 const sample={apiVersion:1,experimental:true,workspaceSupported:true,freshProbe:true,schemaVersion:3,authModes:['agent','private-key'],productionReady:false,additionalForwards:false,perWorkspaceDisconnect:false};
 test('actual status shape yields instance experimental support only',()=>{
  const result=detectCapabilities({sshCarrierCapabilities:sample});assert.equal(result.experimentalWorkspaceSupported,true);assert.equal(result.freshProbe,true);assert.equal(result.productionReady,false);assert.deepEqual(result.authModes,['agent','private-key']);

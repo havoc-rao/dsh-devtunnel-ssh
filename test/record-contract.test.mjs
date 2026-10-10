@@ -2,7 +2,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as api from '../../dsh-remote/lib/ssh-carrier.js';
 import {normalizeCarrierMachine} from '../../dsh-remote/lib/ssh-carrier-record.js';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
 const input=()=>({id:'record-fixture',transport:'ssh',username:'tester',expectedHostFingerprint:'SHA256:'+'A'.repeat(43),connector:{kind:'devtunnel',tunnelId:'fixture.jpe1',remotePort:22,endpoint:{host:'127.0.0.1',port:50736}}});
 test('normalizer accepts endpoint and mode changes with same canonical descriptor',async()=>{
  const reg=registerCarrierWhenAvailable(api);

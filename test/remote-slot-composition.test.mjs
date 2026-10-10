@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs'
 import { createReact, createSlots, loadClient, nodes, text, findButton, findInput, fingerprint } from './support/slot-harness.mjs'
 
 const remoteSource = readFileSync(new URL('../../dsh-remote/lib/client.js', import.meta.url), 'utf8')
-const devtunnelSource = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
+const devtunnelSource = readFileSync(new URL('../lib/client/client.js', import.meta.url), 'utf8')
 
 const capable = { sshCarrierCapabilities: { workspaceSupported: true, carrierIds: ['devtunnel'] } }
 const managed = { sshCarrierCapabilities: { workspaceSupported: true, carrierIds: ['devtunnel'], devTunnelManaged: true } }

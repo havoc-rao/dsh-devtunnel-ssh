@@ -17,7 +17,7 @@ SSH/SFTP/PTY、认证与指纹校验必须复用 dsh-remote；[公开接口缺�
 
 ## 本轮实现边界
 
-新源码位于 [实验入口](<../../packages/devtunnel-ssh/lib/index.js>)、[CLI 策略](<../../packages/devtunnel-ssh/lib/cli-policy.js>)、[租约管理夹具](<../../packages/devtunnel-ssh/lib/lease-manager.js>)。
+新源码位于 [实验入口](<../../lib/index.js>)、[CLI 策略](<../../lib/util/cli-policy.js>)、[租约管理夹具](<../../archive/lease-manager.js>)。
 
 - 实验入口只使用真实 commands 注册契约提供状态命令；不注册伪 SSH Provider。无新 manifest/bundle/profile 安装，无完整 UI，不声称现有 GUI 已更新。
 - CLI 策略只生成 `connect <显式 tunnel-id>` argv，不调用 shell，不接收 token/anonymous/remap 参数；只有绝对可执行路径。未知状态/错误不原样下发浏览器。

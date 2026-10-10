@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {createCarrier,validateConnector} from '../lib/carrier.js';
-import {startManagedConnect} from '../lib/managed-connect.js';
+import {createCarrier,validateConnector} from '../lib/core/carrier.js';
+import {startManagedConnect} from '../lib/core/managed-connect.js';
 import {EventEmitter} from 'node:events';
 const config=port=>({kind:'devtunnel',tunnelId:'fixture.jpe1',remotePort:22,endpoint:{host:'127.0.0.1',port}});
 test('external defaults manual; dynamic port is not logical identity; release never kills CLI',async()=>{

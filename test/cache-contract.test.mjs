@@ -3,7 +3,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import * as api from '../../dsh-remote/lib/ssh-carrier.js';
 import {createCarrierSshPool} from '../../dsh-remote/lib/ssh-carrier-pool.js';
 import {createCarrierPoolCache} from '../../dsh-remote/lib/ssh-carrier-cache.js';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
 const machine={id:'cache-fixture',transport:'ssh',username:'tester',expectedHostFingerprint:'SHA256:'+'A'.repeat(43),connector:{kind:'devtunnel',tunnelId:'fixture.jpe1',remotePort:22,endpoint:{host:'127.0.0.1',port:50736}}};
 test('actual cache shares pool, revises auth and endpoint, explicit invalidate cleans',async()=>{
  const reg=registerCarrierWhenAvailable(api);let created=0,closed=0;

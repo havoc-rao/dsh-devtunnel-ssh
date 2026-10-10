@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkPrerequisites, parsePrerequisiteResult } from '../lib/prerequisites.js';
+import { checkPrerequisites, parsePrerequisiteResult } from '../lib/util/prerequisites.js';
 const installed = { code: 0, stdout: '1.0.2086+eb5ddeb517\n', stderr: '' };
 const help = { code: 0, stdout: 'Usage: devtunnel user show [options]\n', stderr: '' };
 const config = { executable: '/fixture/devtunnel', timeoutMs: 20 };

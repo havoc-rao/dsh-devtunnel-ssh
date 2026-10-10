@@ -22,17 +22,17 @@ registerSshCarrier({ id:'devtunnel', apiVersion:1,
 
 external不拥有外部CLI，release/dispose绝不停止外部进程。端点变更只能明确重录配置并失效旧代，禁止从偶然端口扫描推定目标；TCP reachability不是真SSH身份验证。external失效通知由abort/dispose及底座SSH连接失败协作，不能声称已观测外部CLI退出。
 
-managed owns自身spawn child：固定argv，无shell/凭据参数；解析匹配remotePort的真实CLI转发消息（本地端口可自动分配），取消/启动超时清理；引用计数在carrier层，最后release关闭。自动重试预算0（显式重新acquire新代），不重放exec/write/PTY输入。基础模块lease-manager原型尚无signal接口；新adapter必须独立明确取消语义。
+managed owns自身spawn child：固定argv，无shell/凭据参数；解析匹配remotePort的真实CLI转发消息（本地端口可自动分配），取消/启动超时清理；引用计数在carrier层，最后release关闭。自动重试预算0（显式重新acquire新代），不重放exec/write/PTY输入。原[lease-manager原型](<../../archive/lease-manager.js>)（传输无关、无signal接口）已于分层重构时归档，生产取消语义由 [carrier](<../../lib/core/carrier.js>) 内联持有：外部AbortSignal取消、connector活跃期变化拒绝、引用计数最后释放关闭。
 
 底座须：所有SSH/SFTP/PTY/forward统一承载resolver；严格逻辑指纹与目标revision，池/镜像机器隔离；PTY独立持有lease。缺注册API时只显示能力缺失，不能返回伪成功连接；现有诊断入口不影响宿主。
 
 ## 已实现模块形状（未部署）
 
-- [carrier](<../../packages/devtunnel-ssh/lib/carrier.js>) `createCarrier({startManaged})` 返回上述def及dispose；validate/sanitize返回规范化connector，非法throw。external默认，不拥有CLI；同machine并发managed acquire singleflight，引用计数release，abort取消自身租约；配置活跃期改变拒绝。lease dial getter失效后throw，closed表示失效不是退出证明；release可等待清理，清理失败阻止再次acquire。
-- [managed](<../../packages/devtunnel-ssh/lib/managed-connect.js>) `startManagedConnect({executable,tunnelId,remotePort,spawn?,signal?,startupTimeoutMs?,graceMs?,killMs?}) -> {endpoint:{host,port},closed,close}`。host-local executable由宿主配置提供，可通过 `startManaged: args=>startManagedConnect({...args,executable})` 接入carrier。
-- [输出parser](<../../packages/devtunnel-ssh/lib/output-parser.js>) `createForwardingParser({remotePort,onForwarding}) -> push/finish`，每流独立，用真实历史样式匹配动态端口，未知候选拒绝。
-- [前提诊断](<../../packages/devtunnel-ssh/lib/prerequisites.js>) `checkPrerequisites({executable,run,checkLogin=false,timeoutMs})`，run必需注入；返回白名单状态/数字版本，不给账号原文。run必须承担实际取消和自有进程清理。
-- [能力注册](<../../packages/devtunnel-ssh/lib/registration.js>) `registerCarrierWhenAvailable(api,{startManaged})`：缺API -> ssh-api-required，注册异常 -> registration-unavailable，不破坏宿主；成功返回status/dispose。没有在旧lib/index或产品profile自动装配。
+- [carrier](<../../lib/core/carrier.js>) `createCarrier({startManaged})` 返回上述def及dispose；validate/sanitize返回规范化connector，非法throw。external默认，不拥有CLI；同machine并发managed acquire singleflight，引用计数release，abort取消自身租约；配置活跃期改变拒绝。lease dial getter失效后throw，closed表示失效不是退出证明；release可等待清理，清理失败阻止再次acquire。
+- [managed](<../../lib/core/managed-connect.js>) `startManagedConnect({executable,tunnelId,remotePort,spawn?,signal?,startupTimeoutMs?,graceMs?,killMs?}) -> {endpoint:{host,port},closed,close}`。host-local executable由宿主配置提供，可通过 `startManaged: args=>startManagedConnect({...args,executable})` 接入carrier。
+- [输出parser](<../../lib/util/output-parser.js>) `createForwardingParser({remotePort,onForwarding}) -> push/finish`，每流独立，用真实历史样式匹配动态端口，未知候选拒绝。
+- [前提诊断](<../../lib/util/prerequisites.js>) `checkPrerequisites({executable,run,checkLogin=false,timeoutMs})`，run必需注入；返回白名单状态/数字版本，不给账号原文。run必须承担实际取消和自有进程清理。版本白名单解析为唯一实现，宿主探测 [preflight-runner](<../../lib/util/preflight-runner.js>) 经 `parsePrerequisiteResult` 复用同一解析（后者只持有宿主spawn）。
+- [能力注册](<../../lib/core/registration.js>) `registerCarrierWhenAvailable(api,{startManaged})`：缺API -> ssh-api-required，注册异常 -> registration-unavailable，不破坏宿主；成功返回status/dispose。没有在旧lib/index或产品profile自动装配。
 
 ## Factory gate（父侧实验合同已核对）
 

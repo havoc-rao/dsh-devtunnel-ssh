@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createForwardingParser } from '../lib/output-parser.js';
+import { createForwardingParser } from '../lib/util/output-parser.js';
 test('dynamic local port is selected by remote port across arbitrary chunks', () => {
   const values=[]; const p=createForwardingParser({remotePort:22,onForwarding:v=>values.push(v)});
   const input='informational text\nSSH: Forwarding from 127.0.0.1:43127 to host port 43127\nSSH: Forwarding from 127.0.0.1:64894 to host port 22\r\n';

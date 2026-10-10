@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createManagedStarter } from '../lib/managed-supervisor.js';
-import { createCarrier } from '../lib/carrier.js';
+import { createManagedStarter } from '../lib/core/managed-supervisor.js';
+import { createCarrier } from '../lib/core/carrier.js';
 import { registerSshCarrier } from '../../dsh-remote/lib/ssh-carrier.js';
 import { createCarrierSshPool } from '../../dsh-remote/lib/ssh-carrier-pool.js';
 import { createCarrierPoolCache } from '../../dsh-remote/lib/ssh-carrier-cache.js';

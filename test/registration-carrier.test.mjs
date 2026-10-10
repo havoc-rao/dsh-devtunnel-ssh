@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {registerCarrierWhenAvailable} from '../lib/registration.js';
+import {registerCarrierWhenAvailable} from '../lib/core/registration.js';
 test('missing or rejecting public carrier API does not break host',async()=>{
  const a=registerCarrierWhenAvailable({});assert.equal(a.status,'ssh-api-required');await a.dispose();
  const b=registerCarrierWhenAvailable({registerSshCarrier(){throw Error('private');}});assert.equal(b.status,'registration-unavailable');await b.dispose();

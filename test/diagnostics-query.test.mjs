@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { queryDiagnostics } from '../lib/diagnostics-query.js';
-import { createConnectDiagnostics } from '../lib/connect-diagnostics.js';
+import { queryDiagnostics } from '../lib/util/diagnostics-query.js';
+import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
 test('developer query paginates and filters the retained channel timeline', () => {
   const log = createConnectDiagnostics({ maxEntries: 3 });

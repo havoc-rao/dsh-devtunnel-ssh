@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, stat, symlink, mkdir, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createSettingsStore, validateSettings } from '../lib/settings-store.js';
+import { createSettingsStore, validateSettings } from '../lib/util/settings-store.js';
 
 const defaults = { cliExecutable: '/usr/local/bin/devtunnel', managedEnabled: true };
 async function fixture(t, config = defaults) {
