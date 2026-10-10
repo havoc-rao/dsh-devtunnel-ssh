@@ -1,6 +1,22 @@
 # 首版external/manual实验用户流程
 
-安装本包仅注册carrier和两个命令：`devtunnel-ssh-status`、`devtunnel-ssh-help`。不会安装CLI、登录、启用SSH、改底座Config或连接机器。managed代码存在但未由入口启用。按用户最新要求，机器录入/当前端口更新/测试/镜像统一由dsh-remote现有RemoteSettings机器卡承载；本包不再增加独立设置页。旧client helper apply为noop，manifest无client自动注入。实际统一GUI接线由父侧实现验收。本手册保留手工接线，不宣称GUI生产。
+安装本包仅注册carrier和两个命令：`devtunnel-ssh-status`、`devtunnel-ssh-help`。不会安装CLI、登录、启用SSH、改底座Config或连接机器。默认managed未启用；宿主明确配置后可按需托管，见下文。按用户最新要求，机器录入/当前端口更新/测试/镜像统一由dsh-remote现有RemoteSettings机器卡承载；本包不再增加独立设置页。本包浏览器半侧（manifest `dsh.client`）经公开槽位 `settings.remote.machine.transport.option` / `.fields` 注入类型按钮、通道模式与 devtunnel 字段，draft 由父侧提交（契约见 docs/devtunnel-ssh/remote-settings-slot-contract.md）；无独立设置页、不直接调用宿主路由。实际统一GUI接线仍需真实profile验收。本手册保留手工接线，不宣称GUI生产。
+
+## 托管模式（A侧 connect，显式 opt-in）
+
+保持双端安装/登录、B的sshd与独立主机pin前提。在 **dsh-remote统一Settings → DevTunnel全局设置** 中默认留空路径，自动从A宿主PATH检测已安装官方CLI（绝对路径覆盖为可选），勾选托管授权并明确确认保存，代表授权插件按需启动、维护和清理自己创建的 connect 进程。无需手工编辑Config文件；Config只在尚无已保存Settings时提供兼容默认。未授权或未检测到CLI保持关闭；界面只读显示解析路径与PATH/覆盖来源，找不到时刷新或提供可选覆盖；预检按钮仍需独立确认且使用宿主解析的当前路径，未保存修改不能预检，不自动运行。
+
+刷新只读取设置。保存经宿主认证API持久化到DSH_HOME的插件数据目录，不改产品profile、不安装/登录或启动通道。修改路径/托管开关若有活动托管连接，必须确认断开；全部自有进程cleanup成功后再应用。旧SSH/PTY失效，不重放；external手动租约不受影响。保存使用revision避免覆盖另一窗口修改，冲突需刷新核对，不能自动重试。坏设置文件或cleanup失败均fail closed。多宿主进程同时写同一DSH_HOME不提供跨进程CAS，避免共享数据目录写入。
+
+统一 RemoteSettings 中能力可用时选择「插件托管」，不填本地host/port。已有external机器可在同Tunnel ID/远端端口/pin保持不变时切换为托管并确认保存；无需删机器或重设指纹，旧业务连接失效且不重放。修改未保存时不能probe/mirror。全局已授权的新DevTunnel机器默认托管，未授权不自动授权。托管测试成功提示不显示external旧端口。 统一 RemoteSettings 中新增本插件注入的「Dev Tunnel 通道管理」box（活动通道/重试阻塞/最近事件，可显式断开单条通道，失败不自动重试）。managed 失败时宿主控制台会打印一行脱敏诊断（`reason` 说明是语法不支持的 Forwarding 行、远端端口不匹配，还是端口/行长/配额被拒），浏览器控制台在表单打开期间同步显示，另有只读 `GET /dsh-devtunnel-ssh/diagnostics`；日志不含 token/URL query/私钥，原始 CLI 输出不落盘也不下发。保存的connector示例：
+```json
+{"kind":"devtunnel","mode":"managed","tunnelId":"explicit-id.cluster","remotePort":22}
+```
+远端sshd端口不是本地动态端口，通常22但应核实。保存不启动；连接/测试时才启动CLI，匹配对应remotePort的loopback转发输出。CLI退出或映射改变令旧租约/SSH失效；后续连接在0.5/1.5/4秒退避后按需重建，最多初始+3次不稳定失败尝试。稳定存活30秒后恢复预算。取消/释放不计故障，无用户持有租约时不后台重连。终端、文件写入和失败请求不会自动重放。
+
+异常输出、配置、spawn或无法确认cleanup的错误不自动重试；预算耗尽或安全封锁后，先排查CLI/登录/网络，显式重载插件才重置监督器。不恢复旧PTY；重新连接需重新验证SSH pin。只清理自有进程；同目标已有托管进程时不再启动第二个（不同machineId会报告busy）。B侧 `devtunnel host` 仍由用户维护，此模式不托管B。
+
+本轮源码/fake测试不代表真实CLI、GUI、睡眠恢复或生产验收通过；实际部署另行授权，不改当前profile。
 
 ## 1. 人工前提
 
@@ -36,4 +52,4 @@ connect重启动态端口后，显式machines update同id完整connector endpoin
 
 完整门还需：关闭VSCode独立host工作、未授权Tunnel拒绝、完整8MiB大小/hash/cmp、PTY Ctrl-C/resize/关闭、睡眠恢复与宿主真实认证。既有用户256KiB/resize成功不是全部通过，8MiB中断不算完整性证据。无人值守不承诺。
 
-本包status/help是真可注册命令；API步骤仍需用户手动操作和授权sandbox。核心后续：真实宿主装配/GUI验收、认证请求接入、managed受控配置/审批、前提runner接线和listener归属验证。不得只凭本手册宣布生产ready。
+本包status/help是真可注册命令；API步骤仍需用户手动操作和授权sandbox。核心后续：真实宿主装配/GUI验收、认证请求接入、managed真实CLI/GUI/恢复验收、前提runner接线和listener归属验证。不得只凭本手册宣布生产ready。

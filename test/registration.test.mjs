@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {applyWithLoader,loadCarrierApi} from '../lib/index.js';
+import {apply,applyWithLoader,loadCarrierApi} from '../lib/index.js';
 test('optional API unavailable leaves host intact',async()=>{
  assert.equal(await loadCarrierApi(async()=>{throw Error('private');}),undefined);
  await applyWithLoader({get:()=>undefined},async()=>{assert.fail('no lifecycle');});
@@ -10,7 +10,7 @@ test('independent entry safely registers diagnostic and carrier with owned dispo
  assert.equal(carrier.id,'devtunnel');assert.match(def.name,/^[a-z][a-z0-9_-]*$/u);
  assert.match((await def.handler()).text,/ordinaryWorkspaceReady=false/);
  for(const cleanup of cleanups.reverse())await cleanup();assert.equal(removed,3);
- const help=defs.get('devtunnel-ssh-help');assert.match(help.name,/^[a-z][a-z0-9_-]*$/u);assert.match((await help.handler()).text,/authenticated API/);assert.match((await help.handler()).text,/Managed CLI is not enabled/);
+ const help=defs.get('devtunnel-ssh-help');assert.match(help.name,/^[a-z][a-z0-9_-]*$/u);assert.match((await help.handler()).text,/authenticated API/);assert.match((await help.handler()).text,/managed disabled/);
 });
 test('loader unload invalidates active external leases using collected disposer',async()=>{
  const api=await import('../../dsh-remote/lib/ssh-carrier.js');const cleanups=[];

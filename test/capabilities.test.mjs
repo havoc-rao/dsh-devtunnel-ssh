@@ -9,6 +9,12 @@ test('missing unknown malformed and getter data never promotes support',()=>{
  for(const status of [undefined,null,{}, {workspaceSupported:true},{sshCarrierCapabilities:{...sample,apiVersion:2}},{sshCarrierCapabilities:{...sample,workspaceSupported:'true'}},{get sshCarrierCapabilities(){throw Error('private');}}])assert.equal(detectCapabilities(status).experimentalWorkspaceSupported,false);
  const invalid={...sample};Object.defineProperty(invalid,'workspaceSupported',{get(){throw Error('private');}});assert.equal(detectCapabilities({sshCarrierCapabilities:invalid}).experimentalWorkspaceSupported,false);
 });
+test('managed requires precise authenticated runtime opt-in and workspace support',()=>{
+ for(const [value,supported,expected] of [[true,true,true],[true,false,false],['true',true,false],[undefined,true,false]]){
+  assert.equal(detectCapabilities({sshCarrierCapabilities:{...sample,workspaceSupported:supported,devTunnelManaged:value}}).devTunnelManaged,expected);
+ }
+ assert.equal(detectCapabilities({}).devTunnelManaged,false);
+});
 test('future production claim and auth secret fields remain fenced',()=>{
  const result=detectCapabilities({sshCarrierCapabilities:{...sample,productionReady:true,additionalForwards:true,perWorkspaceDisconnect:true,authModes:['agent','token','secret']}});assert.equal(result.productionReady,false);assert.equal(result.additionalForwards,false);assert.deepEqual(result.authModes,['agent']);
 });

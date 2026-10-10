@@ -4,6 +4,9 @@ const require=createRequire(new URL('../../dsh-remote/package.json',import.meta.
 const {Context,resolveConfig}=require('@deepseek-ai/cordis');
 test('real installed Cordis standard schema defaults and rejects nonabsolute paths',()=>{
  assert.equal(resolveConfig({Config},undefined).cliExecutable,'');
+ assert.equal(resolveConfig({Config},undefined).managedEnabled,false);
+ assert.equal(resolveConfig({Config},{managedEnabled:true}).managedEnabled,true);
+ assert.throws(()=>resolveConfig({Config},{managedEnabled:'yes'}));
  assert.equal(resolveConfig({Config},{cliExecutable:null}).cliExecutable,'','Schemastery null uses safe disabled default');
  assert.equal(resolveConfig({Config},{cliExecutable:'/Users/fixture/bin/devtunnel'}).cliExecutable,'/Users/fixture/bin/devtunnel');
  for(const cliExecutable of ['devtunnel','~/bin/devtunnel','relative/path','/bin/devtunnel\n',123])assert.throws(()=>resolveConfig({Config},{cliExecutable}));

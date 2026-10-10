@@ -11,6 +11,15 @@ test('absent configured path returns safe guidance without spawning',async()=>{
  installPreflightRoute({inject(_names,fn){fn(inner);}});
  let data;const res={statusCode:0,setHeader(){},end(text){data=JSON.parse(text);}};await route.handler({method:'POST'},res);assert.equal(res.statusCode,409);assert.equal(data.error,'HOST_CLI_PATH_NOT_CONFIGURED');
 });
+test('preflight dynamically uses saved settings, never request executable',async()=>{
+ let route;const calls=[];let saved='/fixture/first';
+ const inner={get:()=>({register:def=>{route=def;return()=>{};}}),effect:fn=>fn()};
+ installPreflightRoute({inject(_names,fn){fn(inner);}},{runtime:{withExecutable:fn=>fn(saved)},spawn:spawnFixture(calls)});
+ const call=async(body)=>{let data;const res={statusCode:0,setHeader(){},end(text){data=JSON.parse(text);}};await route.handler(Object.assign(Readable.from([JSON.stringify(body)]),{method:'POST'}),res);return data;};
+ await call({confirmed:true,checkLogin:false});saved='/fixture/second';await call({confirmed:true,checkLogin:false});
+ assert.deepEqual(calls.map(c=>c.path),['/fixture/first','/fixture/second']);
+ assert.equal((await call({confirmed:true,checkLogin:false,executable:'/fixture/untrusted'})).ok,false);assert.equal(calls.length,2);
+});
 test('reactive route requires explicit confirmation and denies browser executable',async()=>{
  let route,removed=0;const calls=[];const inner={get:()=>({register:def=>{route=def;return()=>removed++;}}),effect:fn=>{inner.cleanup=fn();}};
  installPreflightRoute({inject(names,fn){assert.deepEqual(names,['webServer']);fn(inner);}},{executable:'/fixture/devtunnel',spawn:spawnFixture(calls)});
