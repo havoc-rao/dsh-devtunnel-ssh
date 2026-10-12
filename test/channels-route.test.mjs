@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { installChannelsRoute } from '../lib/routes/channels-route.js';
 import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
-const channel = { machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 };
+const channel = { channelId: 'channel-b', name: 'Mac B', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 };
 const supervisor = [{ tunnelId: 'other.jpe1', remotePort: 22, active: false, pending: false, failures: 2, blocked: null, cooldownUntil: 1760000005000 }];
 
 function fixture({ runtime, diagnostics } = {}) {
@@ -33,11 +33,12 @@ function fixture({ runtime, diagnostics } = {}) {
   };
 }
 
+const resident = { enabled: true, mode: 'immediate', tunnelId: 'fixture.jpe1', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 1, users: 1, blocked: null, exhausted: false, lastCode: null };
 const runtime = {
-  channelSnapshot: () => ({ enabled: true, activeManaged: 1, channels: [channel], supervisor }),
-  stopManagedChannel: async machineId => {
-    if (machineId === 'missing') throw Object.assign(new Error('CHANNEL_NOT_FOUND'), { code: 'CHANNEL_NOT_FOUND' });
-    return { machineId, mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 };
+  channelSnapshot: () => ({ enabled: true, activeManaged: 1, channels: [channel], supervisor, resident }),
+  channelCommand: async ({ channelId }) => {
+    if (channelId === 'missing') throw Object.assign(new Error('CHANNEL_NOT_FOUND'), { code: 'CHANNEL_NOT_FOUND' });
+    return channelId;
   },
 };
 
@@ -52,24 +53,25 @@ test('GET serves the channel snapshot plus the diagnostics tail', async () => {
   assert.equal(result.data.activeManaged, 1);
   assert.deepEqual(result.data.channels, [channel]);
   assert.deepEqual(result.data.supervisor, supervisor);
+  assert.deepEqual(result.data.resident, resident);
   assert.equal(result.data.recent.length, 1);
   assert.equal(result.data.recent[0].code, 'CONNECT_READY');
 });
 
-test('POST stops exactly one machine after strict validation', async () => {
-  const result = await fixture({ runtime }).request('POST', { action: 'stop', machineId: 'mac-b', confirmed: true });
+test('POST stops exactly one channel after strict validation', async () => {
+  const result = await fixture({ runtime }).request('POST', { action: 'stop', channelId: 'channel-b', revision: 0, confirmed: true });
   assert.equal(result.status, 200);
-  assert.deepEqual(result.data.stopped, { machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 });
-  const notFound = await fixture({ runtime }).request('POST', { action: 'stop', machineId: 'missing', confirmed: true });
+  assert.equal(result.data.channelId, 'channel-b');
+  const notFound = await fixture({ runtime }).request('POST', { action: 'stop', channelId: 'missing', revision: 0, confirmed: true });
   assert.equal(notFound.status, 404);
   assert.deepEqual(notFound.data, { ok: false, error: 'CHANNEL_NOT_FOUND' });
   for (const bad of [
-    { action: 'stop', machineId: 'mac-b' },
-    { action: 'stop', machineId: 'mac-b', confirmed: false },
-    { action: 'stop', machineId: 'mac-b', confirmed: true, extra: 1 },
-    { action: 'restart', machineId: 'mac-b', confirmed: true },
-    { action: 'stop', machineId: '../etc', confirmed: true },
-    { action: 'stop', machineId: 'a'.repeat(200), confirmed: true },
+    { action: 'stop', channelId: 'channel-b', revision: 0 },
+    { action: 'stop', channelId: 'channel-b', revision: 0, confirmed: false },
+    { action: 'stop', channelId: 'channel-b', revision: 0, confirmed: true, extra: 1 },
+    { action: 'unknown', channelId: 'channel-b', revision: 0, confirmed: true },
+    { action: 'stop', channelId: '../etc', revision: 0, confirmed: true },
+    { action: 'stop', channelId: 'a'.repeat(200), revision: 0, confirmed: true },
   ]) {
     const denied = await fixture({ runtime }).request('POST', bad);
     assert.equal(denied.status, 400, JSON.stringify(bad));
@@ -88,10 +90,24 @@ test('method and availability fail closed without leaking adapter detail', async
   }
   const broken = {
     channelSnapshot: () => ({ enabled: true, activeManaged: 0, channels: [], supervisor: [] }),
-    stopManagedChannel: async () => { throw new Error('raw adapter secret'); },
+    channelCommand: async () => { throw new Error('raw adapter secret'); },
   };
-  const failed = await fixture({ runtime: broken }).request('POST', { action: 'stop', machineId: 'mac-b', confirmed: true });
+  const failed = await fixture({ runtime: broken }).request('POST', { action: 'stop', channelId: 'channel-b', revision: 0, confirmed: true });
   assert.equal(failed.status, 503);
   assert.deepEqual(failed.data, { ok: false, error: 'CHANNELS_UNAVAILABLE' });
   assert.doesNotMatch(JSON.stringify(failed.data), /raw adapter secret/u);
+});
+
+test('all catalog actions pass the explicit id and revision; unknown properties and missing confirmation reject', async () => {
+  const calls = [];
+  const f = fixture({ runtime: { ...runtime, channelCommand: async body => { calls.push(body); return body.channelId || 'generated'; } } });
+  for (const action of ['create', 'update', 'delete', 'start', 'stop', 'restart']) {
+    const body = { action, channelId: action === 'create' ? '' : 'channel-b', revision: 4, confirmed: true,
+      ...(['create', 'update'].includes(action) ? { channel: { name: 'B', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 } } : {}) };
+    assert.equal((await f.request('POST', body)).status, 200);
+    assert.deepEqual(calls.at(-1), body);
+    assert.equal((await f.request('POST', { ...body, confirmed: false })).status, 400);
+    assert.equal((await f.request('POST', { ...body, executable: '/caller/override' })).status, 400);
+  }
+  assert.equal(calls.length, 6);
 });

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createSettingsStore, validateSettings } from '../lib/util/settings-store.js';
 
-const defaults = { cliExecutable: '/usr/local/bin/devtunnel', managedEnabled: true };
+const defaults = { cliExecutable: '/usr/local/bin/devtunnel', managedEnabled: true, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' };
 async function fixture(t, config = defaults) {
   const root = await mkdtemp(join(tmpdir(), 'devtunnel-settings-test-'));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -22,7 +22,7 @@ test('missing file uses copied config; atomic persist has schema, increasing rev
   assert.deepEqual(initial, { settings: defaults, revision: 0, source: 'config' });
   initial.settings.managedEnabled = false;
   assert.equal((await store.snapshot()).settings.managedEnabled, true);
-  const settings = { cliExecutable: '/opt/devtunnel', managedEnabled: false };
+  const settings = { cliExecutable: '/opt/devtunnel', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' };
   assert.deepEqual(await store.save(settings, { expectedRevision: 0 }), { settings, revision: 1, source: 'settings' });
   assert.equal((await stat(file)).mode & 0o777, 0o600);
   assert.deepEqual(JSON.parse(await readFile(file, 'utf8')), { schemaVersion: 1, revision: 1, settings });
@@ -48,7 +48,8 @@ test('strict path, boolean, enabled path and secret validation', async t => {
     await assert.rejects(store.save(value, { expectedRevision: 0 }), isCode('SETTINGS_REJECTED'));
   }
   assert.ok(Object.isFrozen(validateSettings(defaults)));
-  assert.deepEqual(validateSettings({ cliExecutable: '', managedEnabled: false }), { cliExecutable: '', managedEnabled: false });
+  assert.deepEqual(validateSettings({ cliExecutable: '', managedEnabled: false }),
+    { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' });
   assert.equal(validateSettings({ cliExecutable: '/' + 'a'.repeat(4095), managedEnabled: false }).cliExecutable.length, 4096);
   for (const revision of [-1, NaN, Infinity, 0.5, '0', undefined]) {
     await assert.rejects(store.save(defaults, { expectedRevision: revision }), isCode('SETTINGS_REJECTED'));
@@ -57,8 +58,8 @@ test('strict path, boolean, enabled path and secret validation', async t => {
 
 test('optimistic checks serialize writers; stale save never changes persisted settings', async t => {
   const { store, file, directory } = await fixture(t);
-  const a = { cliExecutable: '/a', managedEnabled: false };
-  const b = { cliExecutable: '/b', managedEnabled: true };
+  const a = { cliExecutable: '/a', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' };
+  const b = { cliExecutable: '/b', managedEnabled: true, residentTunnelId: 'r.jpe1', residentRemotePort: 22, residentMode: 'immediate' };
   const results = await Promise.allSettled([store.save(a, 0), store.save(b, 0)]);
   assert.equal(results[0].status, 'fulfilled');
   assert.equal(results[1].reason.code, 'SETTINGS_REVISION_CONFLICT');
@@ -122,6 +123,7 @@ test('failed write never updates memory or creates settings; raw filesystem path
   const broken = createSettingsStore({ directory: join(blocker, 'child'), defaults });
   await assert.rejects(broken.save(defaults, 0), isCode('SETTINGS_UNAVAILABLE'));
   assert.deepEqual(await store.snapshot(), { settings: defaults, revision: 0, source: 'config' });
-  assert.deepEqual((await store.save({ cliExecutable: '', managedEnabled: false }, 0)).settings, { cliExecutable: '', managedEnabled: false });
+  assert.deepEqual((await store.save({ cliExecutable: '', managedEnabled: false }, 0)).settings,
+    { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' });
   assert.equal((await createSettingsStore({ directory, defaults }).snapshot()).revision, 1);
 });

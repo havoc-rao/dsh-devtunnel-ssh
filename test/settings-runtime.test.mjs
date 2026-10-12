@@ -11,7 +11,7 @@ function storeFixture() {
     value={settings,revision:value.revision+1,source:'settings'};return value;
   }};
 }
-const body=(revision,extra={})=>({cliExecutable:'/fixture/new',managedEnabled:true,confirmed:true,disconnectActive:false,revision,...extra});
+const body=(revision,extra={})=>({cliExecutable:'/fixture/new',managedEnabled:true,residentTunnelId:'',residentRemotePort:0,residentMode:'off',confirmed:true,disconnectActive:false,revision,...extra});
 const connector={kind:'devtunnel',mode:'managed',tunnelId:'fixture',remotePort:22};
 const detection = (path = '', source = 'path') => ({ status: path ? 'found' : 'not-found', source, resolvedExecutable: path });
 const emptyStore = () => {
@@ -160,26 +160,12 @@ test('cleanup failure blocks settings and never saves or restarts',async()=>{
   await assert.rejects(runtime.snapshot(),/SETTINGS_UNAVAILABLE/);await carrier.dispose();await runtime.dispose();
 });
 
-test('channel snapshot merges carrier channels with supervisor state and degrades to empty', async () => {
-  const channels = [{ machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1, generation: 'g1', refs: 1 }];
-  const supervisor = [{ tunnelId: 'other', remotePort: 22, active: false, pending: false, failures: 2, blocked: null, cooldownUntil: null }];
-  const runtime = await createSettingsRuntime({ store: storeFixture(), makeStarter: () => Object.assign(() => {}, { list: () => supervisor }) });
-  // No carrier attached yet: total, never throwing.
-  assert.deepEqual(runtime.channelSnapshot(), { enabled: true, activeManaged: 0, channels: [], supervisor });
-  runtime.attachCarrier({ activeManaged: 1, snapshot: () => channels, stopManaged: async machineId => ({ machineId, mode: 'managed', tunnelId: 'fixture', remotePort: 22 }) });
-  assert.deepEqual(runtime.channelSnapshot(), { enabled: true, activeManaged: 1, channels, supervisor });
-  assert.deepEqual(await runtime.stopManagedChannel('mac-b'), { machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture', remotePort: 22 });
+test('channel catalog is independent of attached SSH carrier state', async () => {
+  const runtime = await createSettingsRuntime({ store: storeFixture(), makeStarter: () => async () => {} });
+  runtime.attachCarrier({ activeManaged: 9, snapshot: () => [{ machineId: 'wrong-owner' }] });
+  assert.deepEqual(runtime.channelSnapshot().channels, []);
+  assert.equal(runtime.channelSnapshot().activeManaged, 0);
   await runtime.dispose();
-  assert.deepEqual(runtime.channelSnapshot(), { enabled: false, activeManaged: 0, channels: [], supervisor: [] });
-});
-
-test('stopManagedChannel fails closed on an unusable carrier and keeps adapter codes', async () => {
-  const runtime = await createSettingsRuntime({ store: storeFixture(), makeStarter: () => undefined });
-  await assert.rejects(runtime.stopManagedChannel('mac-b'), error => error.code === 'CHANNELS_UNAVAILABLE');
-  runtime.attachCarrier({ activeManaged: 0, snapshot: () => [], stopManaged: async () => { throw Object.assign(new Error('x'), { code: 'CHANNEL_NOT_FOUND' }); } });
-  await assert.rejects(runtime.stopManagedChannel('mac-b'), error => error.code === 'CHANNEL_NOT_FOUND');
-  runtime.attachCarrier({ activeManaged: 0, snapshot: () => [], stopManaged: async () => { throw new Error('raw adapter secret'); } });
-  await assert.rejects(runtime.stopManagedChannel('mac-b'), error => error.code === 'CHANNELS_UNAVAILABLE' && !/secret/u.test(error.message));
-  await runtime.dispose();
-  await assert.rejects(runtime.stopManagedChannel('mac-b'), error => error.code === 'SETTINGS_UNAVAILABLE');
+  assert.equal(runtime.channelSnapshot().available, false);
+  await assert.rejects(runtime.channelCommand({ action: 'stop' }), /SETTINGS_UNAVAILABLE/);
 });

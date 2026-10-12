@@ -25,7 +25,7 @@ test('host configuration alone gates managed; registration never starts CLI', as
       if(previousPath===undefined)delete process.env.PATH;else process.env.PATH=previousPath; }
     assert.equal(carrier.capabilities.managedConnect,enabled);
     assert.equal(carrier.capabilities.automaticLocalPort,enabled);
-    if (!enabled) await assert.rejects(carrier.acquire({machineId:'mac',connector:{kind:'devtunnel',mode:'managed',tunnelId:'fixture',remotePort:22}}),/MANAGED_UNAVAILABLE/);
+    await assert.rejects(carrier.acquire({machineId:'mac',connector:{kind:'devtunnel',mode:'managed',tunnelId:'fixture',remotePort:22}}),/CHANNEL_NOT_FOUND/);
     for(const dispose of cleanup.reverse())await dispose();
   }
 });

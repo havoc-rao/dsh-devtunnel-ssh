@@ -4,8 +4,9 @@ import { Readable } from 'node:stream';
 import { installSettingsRoute, installDiagnosticsRoute } from '../lib/routes/settings-route.js';
 import { createConnectDiagnostics } from '../lib/util/connect-diagnostics.js';
 
-const snapshot = { settings: { cliExecutable: '/opt/devtunnel', managedEnabled: true }, revision: 1, source: 'settings', activeManaged: 2, available: true };
-const body = { cliExecutable: '/opt/devtunnel', managedEnabled: true, confirmed: true, disconnectActive: false, revision: 1 };
+const settings = { cliExecutable: '/opt/devtunnel', managedEnabled: true, residentTunnelId: 'resident.jpe1', residentRemotePort: 22, residentMode: 'lazy' };
+const snapshot = { settings, revision: 1, source: 'settings', activeManaged: 2, available: true };
+const body = { cliExecutable: '/opt/devtunnel', managedEnabled: true, residentTunnelId: 'resident.jpe1', residentRemotePort: 22, residentMode: 'lazy', confirmed: true, disconnectActive: false, revision: 1 };
 function fixture(runtime = { snapshot: async () => snapshot, update: async () => snapshot }) {
   let route, disposer, disposed = false;
   const server = { register(value) { route = value; return () => { disposed = true; }; } };
@@ -48,7 +49,7 @@ test('POST strictly validated, awaits runtime update and returns snapshot', asyn
   const f = fixture({ snapshot() { assert.fail(); }, async update(value) { received = value; await Promise.resolve(); return snapshot; } });
   assert.deepEqual((await f.request('POST', JSON.stringify(body))).data, { ok: true, ...snapshot });
   assert.deepEqual(received, body);
-  const config = { settings: { cliExecutable: '', managedEnabled: false }, revision: 0, source: 'config' };
+  const config = { settings: { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' }, revision: 0, source: 'config' };
   const initial = fixture({ snapshot: async () => config, update: async value => ({ ...config, revision: value.revision + 1, source: 'settings' }) });
   assert.equal((await initial.request('POST', JSON.stringify({ ...body, cliExecutable: '', managedEnabled: false, revision: 0 }))).status, 200);
 });
@@ -74,7 +75,7 @@ test('POST rejects malformed, oversized, unknown or secret keys before runtime',
 
 test('empty override permits managed authorization and returns safe PATH detection',async()=>{
  const cli={status:'found',source:'path',resolvedExecutable:'/opt/bin/devtunnel'};
- const f=fixture({snapshot:async()=>({...snapshot,cli:{...cli,token:'secret'}}),update:async value=>({...snapshot,settings:{cliExecutable:value.cliExecutable,managedEnabled:value.managedEnabled},cli})});
+ const f=fixture({snapshot:async()=>({...snapshot,cli:{...cli,token:'secret'}}),update:async value=>({...snapshot,settings:{cliExecutable:value.cliExecutable,managedEnabled:value.managedEnabled,residentTunnelId:value.residentTunnelId,residentRemotePort:value.residentRemotePort,residentMode:value.residentMode},cli})});
  assert.deepEqual((await f.request('GET')).data.cli,cli);
  const saved=await f.request('POST',JSON.stringify({...body,cliExecutable:''}));assert.equal(saved.status,200);assert.equal(saved.data.settings.managedEnabled,true);
 });
