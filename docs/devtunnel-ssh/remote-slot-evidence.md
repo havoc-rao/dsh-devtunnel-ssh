@@ -36,6 +36,19 @@ runtime `channelSnapshot()/stopManagedChannel()`、新路由 `lib/routes/channel
 
 2026-10-10 追加：为了让「通道已就绪但测试仍失败」可归因，carrier 在每次租约交接处记录 `CHANNEL_LEASED`（带 machineId/endpoint）、最后一个租约释放记 `CHANNEL_RELEASED`、显式断开记 `CHANNEL_STOPPED`；诊断条目新增经校验的 `machineId`，box 的最近事件行据此显示是哪台机器的 SSH 层用上了通道。
 
+### 追加：Dev Tunnel 整卡（契约 v3，2026-10-11）
+
+用户反馈：页面顶部「Dev Tunnel 全局设置」卡与「Dev Tunnel 通道管理」box 分开且 resident 常驻状态
+重复展示，要求**封装为一个 box 并只删重复**。采纳 occupant 全渲染方向：
+[dsh-remote `lib/client.js`](../../../dsh-remote/lib/client.js) 删除 `tunnelCard` 与
+`residentStatusLine`（顶部卡与重复的状态行），`useTunnelSettings` 状态机保留并经 panel 槽位
+owner props 的 `tunnel` 传给占用方（`renderSlot(SLOT_TRANSPORT_PANEL, { ..., tunnel })`）；
+本仓 `DevTunnelPanel` 扩展为整卡：全局设置表单（CLI 路径/托管授权/常驻配置/保存/刷新/预检，
+`tunnel` 未就绪时整节禁用而非隐藏）+ 常驻状态行（整卡唯一一处）+ 活动通道/重试阻塞/最近事件/断开。
+面板标题改为中性「Dev Tunnel」；渲染层 i18n（`tunnel*` keys）迁入本插件 zh/en 字典，
+hook 内 confirm/错误/消息 keys 留在 dsh-remote。契约 v3：
+[remote-settings-slot-contract.md](<remote-settings-slot-contract.md>)。
+
 ### 追加：managed 诊断日志（`CONNECT_OUTPUT_REJECTED` 可见化）
 
 见[managed-connect-diagnostics.md](<managed-connect-diagnostics.md>)。新增 `lib/util/connect-diagnostics.js`（掩码 + 环形缓冲）、

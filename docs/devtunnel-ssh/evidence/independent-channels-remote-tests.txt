@@ -1,0 +1,304 @@
+TAP version 13
+# Subtest: slots: SSH entry renders the type button and the declared slot seats
+ok 1 - slots: SSH entry renders the type button and the declared slot seats
+  ---
+  duration_ms: 39.438667
+  type: 'test'
+  ...
+# Subtest: panel slot: occupant receives the live registry/scope state and dispatches service and diagnostic sections independently
+ok 2 - panel slot: occupant receives the live registry/scope state and dispatches service and diagnostic sections independently
+  ---
+  duration_ms: 10.506167
+  type: 'test'
+  ...
+# Subtest: panel slot: an absent occupant leaves machines usable
+ok 3 - panel slot: an absent occupant leaves machines usable
+  ---
+  duration_ms: 3.020583
+  type: 'test'
+  ...
+# Subtest: gating: the carrier shape is decided by form.transport, never by body.transport
+ok 4 - gating: the carrier shape is decided by form.transport, never by body.transport
+  ---
+  duration_ms: 8.70225
+  type: 'test'
+  ...
+# Subtest: slots: a saved carrier machine rehydrates the occupant draft and the list row uses the connector address
+ok 5 - slots: a saved carrier machine rehydrates the occupant draft and the list row uses the connector address
+  ---
+  duration_ms: 3.97475
+  type: 'test'
+  ...
+# Subtest: pipeline: a saved carrier probe sends exactly { id } so the host reuses that machine lease
+ok 6 - pipeline: a saved carrier probe sends exactly { id } so the host reuses that machine lease
+  ---
+  duration_ms: 2.637625
+  type: 'test'
+  ...
+# Subtest: pipeline: a new carrier probe still posts the published draft with no id
+ok 7 - pipeline: a new carrier probe still posts the published draft with no id
+  ---
+  duration_ms: 3.221375
+  type: 'test'
+  ...
+# Subtest: pipeline: a dirty saved machine probe is blocked before any request (no silent old-config probe)
+ok 8 - pipeline: a dirty saved machine probe is blocked before any request (no silent old-config probe)
+  ---
+  duration_ms: 27.820583
+  type: 'test'
+  ...
+# Subtest: pipeline: dirty saved draft cannot probe; save confirms, posts body+action+id and the clean draft may probe again
+ok 9 - pipeline: dirty saved draft cannot probe; save confirms, posts body+action+id and the clean draft may probe again
+  ---
+  duration_ms: 2.7205
+  type: 'test'
+  ...
+# Subtest: pipeline: declining the update confirmation posts nothing
+ok 10 - pipeline: declining the update confirmation posts nothing
+  ---
+  duration_ms: 46.21075
+  type: 'test'
+  ...
+# Subtest: pipeline: the dirty gate compares canonical JSON, so key order is not a contract
+ok 11 - pipeline: the dirty gate compares canonical JSON, so key order is not a contract
+  ---
+  duration_ms: 1.942875
+  type: 'test'
+  ...
+# Subtest: pipeline: managed draft omits endpoint and probes the published body
+ok 12 - pipeline: managed draft omits endpoint and probes the published body
+  ---
+  duration_ms: 10.017375
+  type: 'test'
+  ...
+# Subtest: pipeline: mirror requires saved scope, clean draft and non-empty path, then posts the mirror request
+ok 13 - pipeline: mirror requires saved scope, clean draft and non-empty path, then posts the mirror request
+  ---
+  duration_ms: 4.347667
+  type: 'test'
+  ...
+# Subtest: contract: patch/setChecked clear the previous probe feedback (tst/msg/err/localMirror)
+ok 14 - contract: patch/setChecked clear the previous probe feedback (tst/msg/err/localMirror)
+  ---
+  duration_ms: 49.657584
+  type: 'test'
+  ...
+# Subtest: contract: carrier.publish is idempotent (equal canonical draft never setState)
+ok 15 - contract: carrier.publish is idempotent (equal canonical draft never setState)
+  ---
+  duration_ms: 5.380917
+  type: 'test'
+  ...
+# Subtest: pipeline: unsupported workspace capability still gates useNow and posts nothing for the draft
+ok 16 - pipeline: unsupported workspace capability still gates useNow and posts nothing for the draft
+  ---
+  duration_ms: 3.779083
+  type: 'test'
+  ...
+# Subtest: global settings mount only reads; save confirms, uses strict revision body, refreshes capabilities, preflight uses saved host settings
+ok 17 - global settings mount only reads; save confirms, uses strict revision body, refreshes capabilities, preflight uses saved host settings
+  ---
+  duration_ms: 37.083667
+  type: 'test'
+  ...
+# Subtest: save authorization and active disconnection each require confirmation; probe cancellation does not run CLI
+ok 18 - save authorization and active disconnection each require confirmation; probe cancellation does not run CLI
+  ---
+  duration_ms: 16.119292
+  type: 'test'
+  ...
+# Subtest: 409 conflicts leave edits and revision intact, do not auto retry or refresh; manual refresh resets dirty state
+ok 19 - 409 conflicts leave edits and revision intact, do not auto retry or refresh; manual refresh resets dirty state
+  ---
+  duration_ms: 31.578917
+  type: 'test'
+  ...
+# Subtest: missing/unavailable plugin degrades gracefully, disables write/probe and allows manual recovery
+ok 20 - missing/unavailable plugin degrades gracefully, disables write/probe and allows manual recovery
+  ---
+  duration_ms: 13.490542
+  type: 'test'
+  ...
+# Subtest: only POSIX absolute CLI paths can save; Windows and relative paths cannot save or issue requests
+ok 21 - only POSIX absolute CLI paths can save; Windows and relative paths cannot save or issue requests
+  ---
+  duration_ms: 13.175334
+  type: 'test'
+  ...
+# Subtest: CLI path length allows 4096 characters, rejects 4097 including trim-hidden excess
+ok 22 - CLI path length allows 4096 characters, rejects 4097 including trim-hidden excess
+  ---
+  duration_ms: 2.068958
+  type: 'test'
+  ...
+# Subtest: CLI path rejects every C0/C1 control character, even at trimmed edges or in disabled empty paths
+ok 23 - CLI path rejects every C0/C1 control character, even at trimmed edges or in disabled empty paths
+  ---
+  duration_ms: 149.353625
+  type: 'test'
+  ...
+# Subtest: empty override uses automatic PATH, permits managed save, and found CLI permits confirmed preflight
+ok 24 - empty override uses automatic PATH, permits managed save, and found CLI permits confirmed preflight
+  ---
+  duration_ms: 10.770667
+  type: 'test'
+  ...
+# Subtest: PATH or override not found is a healthy settings API; saving remains possible but preflight is blocked
+ok 25 - PATH or override not found is a healthy settings API; saving remains possible but preflight is blocked
+  ---
+  duration_ms: 4.248292
+  type: 'test'
+  ...
+# Subtest: settings read errors distinguish route, auth, service, network and contract; disclose only HTTP and safe codes
+ok 26 - settings read errors distinguish route, auth, service, network and contract; disclose only HTTP and safe codes
+  ---
+  duration_ms: 10.449333
+  type: 'test'
+  ...
+# Subtest: Desktop settings GET/save/preflight use direct plugin routes, with no alternate-prefix write retries
+ok 27 - Desktop settings GET/save/preflight use direct plugin routes, with no alternate-prefix write retries
+  ---
+  duration_ms: 1.849417
+  type: 'test'
+  ...
+# Subtest: resident: off disables id/port; immediate start confirms and posts exactly 8 keys
+ok 28 - resident: off disables id/port; immediate start confirms and posts exactly 8 keys
+  ---
+  duration_ms: 17.82775
+  type: 'test'
+  ...
+# Subtest: resident: invalid tunnel id or port blocks save; switching to off resets the inputs
+ok 29 - resident: invalid tunnel id or port blocks save; switching to off resets the inputs
+  ---
+  duration_ms: 1.126416
+  type: 'test'
+  ...
+# Subtest: resident: changing mode while active requires explicit disconnect
+ok 30 - resident: changing mode while active requires explicit disconnect
+  ---
+  duration_ms: 6.680917
+  type: 'test'
+  ...
+# Subtest: resident: off normalizes leftover draft values to empty id and port 0 on save
+ok 31 - resident: off normalizes leftover draft values to empty id and port 0 on save
+  ---
+  duration_ms: 3.257458
+  type: 'test'
+  ...
+# Subtest: real apply rw_exec routes two machine IDs to isolated pools on one carrier endpoint and releases on disposal
+ok 32 - real apply rw_exec routes two machine IDs to isolated pools on one carrier endpoint and releases on disposal
+  ---
+  duration_ms: 295.353375
+  type: 'test'
+  ...
+# Subtest: real apply strict wrong host pin rejects before password authentication or command execution
+ok 33 - real apply strict wrong host pin rejects before password authentication or command execution
+  ---
+  duration_ms: 51.762958
+  type: 'test'
+  ...
+# Subtest: real apply local/missing execution context and disabled carrier opt-in refuse without dialing
+ok 34 - real apply local/missing execution context and disabled carrier opt-in refuse without dialing
+  ---
+  duration_ms: 19.744208
+  type: 'test'
+  ...
+# Subtest: real apply missing carrier fails closed despite reachable direct fallback metadata
+ok 35 - real apply missing carrier fails closed despite reachable direct fallback metadata
+  ---
+  duration_ms: 24.170875
+  type: 'test'
+  ...
+# Subtest: concurrent same-machine acquisition shares one pool, different ids isolated
+ok 36 - concurrent same-machine acquisition shares one pool, different ids isolated
+  ---
+  duration_ms: 1.903917
+  type: 'test'
+  ...
+# Subtest: credentials/endpoint change invalidates old pool; failed acquire not cached
+ok 37 - credentials/endpoint change invalidates old pool; failed acquire not cached
+  ---
+  duration_ms: 1.01975
+  type: 'test'
+  ...
+# Subtest: timeout configuration changes replace cached pool rather than retaining stale limits
+ok 38 - timeout configuration changes replace cached pool rather than retaining stale limits
+  ---
+  duration_ms: 0.443917
+  type: 'test'
+  ...
+# Subtest: pending acquire uses immutable record snapshot
+ok 39 - pending acquire uses immutable record snapshot
+  ---
+  duration_ms: 0.353792
+  type: 'test'
+  ...
+# Subtest: concurrent revision replacement shares one new acquisition
+ok 40 - concurrent revision replacement shares one new acquisition
+  ---
+  duration_ms: 0.258542
+  type: 'test'
+  ...
+# Subtest: invalidate during asynchronous acquisition closes late pool and blocks reuse
+ok 41 - invalidate during asynchronous acquisition closes late pool and blocks reuse
+  ---
+  duration_ms: 0.160209
+  type: 'test'
+  ...
+# Subtest: record persistence strips runtime SSH endpoints and forces strict trust
+ok 42 - record persistence strips runtime SSH endpoints and forces strict trust
+  ---
+  duration_ms: 4.227708
+  type: 'test'
+  ...
+# Subtest: endpoint change preserves descriptor identity and SSH credentials
+ok 43 - endpoint change preserves descriptor identity and SSH credentials
+  ---
+  duration_ms: 1.366584
+  type: 'test'
+  ...
+# Subtest: target, trust and transport changes fail closed
+ok 44 - target, trust and transport changes fail closed
+  ---
+  duration_ms: 6.358917
+  type: 'test'
+  ...
+# Subtest: browser projection excludes credentials and raw connector secrets
+ok 45 - browser projection excludes credentials and raw connector secrets
+  ---
+  duration_ms: 10.718041
+  type: 'test'
+  ...
+# Subtest: auth values reject unknown types without invoking coercion
+ok 46 - auth values reject unknown types without invoking coercion
+  ---
+  duration_ms: 7.176792
+  type: 'test'
+  ...
+# Subtest: machine and connector boundaries reject accessors and non-plain records
+ok 47 - machine and connector boundaries reject accessors and non-plain records
+  ---
+  duration_ms: 0.330417
+  type: 'test'
+  ...
+# Subtest: forged descriptor identity or secret connector fields are rejected
+ok 48 - forged descriptor identity or secret connector fields are rejected
+  ---
+  duration_ms: 0.224042
+  type: 'test'
+  ...
+# Subtest: carrier factory verifies real SSH wire pin and closes dedicated PTY before release
+ok 49 - carrier factory verifies real SSH wire pin and closes dedicated PTY before release
+  ---
+  duration_ms: 207.679916
+  type: 'test'
+  ...
+1..49
+# tests 49
+# suites 0
+# pass 49
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 501.614875

@@ -11,6 +11,15 @@ test('normalizer accepts endpoint and mode changes with same canonical descripto
  const changed=normalizeCarrierMachine({connector:{...saved.connector,endpoint:{host:'::1',port:64894}}},saved);assert.equal(api.sshConnectorTargetIdentity(changed.connector),id);
  const managed=normalizeCarrierMachine({connector:{kind:'devtunnel',mode:'managed',tunnelId:'fixture.jpe1',remotePort:22}},changed);assert.equal(api.sshConnectorTargetIdentity(managed.connector),id);
  assert.equal(managed.id,saved.id);assert.equal(managed.hostKeyMode,'verify');
+ // JSON is the Git route wire boundary: a carrier record remains hostless,
+ // not a direct-SSH record synthesized from its current loopback endpoint.
+ for(const record of [saved,changed,managed]) {
+  const wire=JSON.parse(JSON.stringify(record));
+  assert.equal(Object.hasOwn(wire,'host'),false);
+  assert.equal(Object.hasOwn(wire,'port'),false);
+  assert.equal(api.sshConnectorTargetIdentity(wire.connector),id);
+ }
+ assert.equal(Object.hasOwn(JSON.parse(JSON.stringify(managed)).connector,'endpoint'),false);
  }finally{await reg.dispose();}
 });
 test('normalizer rejects target/pin replacement and connector identity or secrets',async()=>{

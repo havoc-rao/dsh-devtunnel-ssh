@@ -1,15 +1,34 @@
 # dsh-devtunnel-ssh — 独立实验插件包
 
-本包是可本地打包/装配的独立npm/DSH bundle，不替换旧Bridge包。private=true防止误发公共registry。peer dsh-remote按真实API能力检查而非猜未发布版本；正式最小版本待父侧发布冻结。
+本插件独立管理 `devtunnel connect` 通道；`dsh-remote` 管理 SSH 认证、连接池、终端、文件和 Git。通道与 SSH 机器分别保存，使用公开 `dsh-remote/lib/ssh-carrier.js` 注册路径交接端点和失效通知，不复制 SSH 引擎。
 
-入口动态加载公开 `dsh-remote/lib/ssh-carrier.js`，缺失或注册失败安全显示能力缺失，不拖垮宿主。安装/加载本包不安装CLI、不登录、不启用SSH、不创建机器或连接隧道。
+## 使用
 
-默认注册external/manual carrier。显式授权 `managedEnabled:true` 且宿主已检测到CLI后，可启用 managed 托管：仅在实际连接/测试时启动官方 `devtunnel connect`，自动解析本地端口；旧租约失效后，下次连接受控退避重建，不重放SSH业务。保存机器及加载插件不启动CLI。**两端A/B都需自行安装官方devtunnel CLI并明确完成GitHub登录**，不是安装插件就已具备；B还需用户授权的系统sshd/账号与独立核实的主机fingerprint。agent不自动安装、登录、读取密钥/agent/cache或启用服务。
+在 dsh-remote 的统一 RemoteSettings 中打开 **Dev Tunnel** 整卡：
 
-**实验route源码已组合验证**：显式opt-in下CRUD、fresh probe、schema3 mirror与cache/卸载可测试；不是只实现registry。当前实例能力由宿主认证的`GET /dsh-remote/status`返回`sshCarrierCapabilities`决定；托管通过注册carrier的精确 `managedConnect` 能力与宿主workspace opt-in共同门控；本包capabilities模块将真实`workspaceSupported:true`映射为`experimentalWorkspaceSupported:true`，缺失/未知false，不从registry推断。用户入口统一在父dsh-remote的RemoteSettings机器卡，不再注册独立settings.section。父侧只声明两个槽位（`settings.remote.machine.transport.option` / `.fields`）；本包浏览器半侧（manifest `dsh.client` + `exports["./client"]`）经公开 `ctx.slots.inject` 注入「Dev Tunnel SSH」类型按钮、通道模式与全部 devtunnel 字段，并把经能力门控的连接体 draft 交回父侧提交；本包不直接调用任何宿主路由。父侧保留机器注册表与通用保存/probe/mirror接线；本包保留carrier、CLI预检及status/help。契约见[docs/devtunnel-ssh/remote-settings-slot-contract.md](<docs/devtunnel-ssh/remote-settings-slot-contract.md>)。**ordinaryWorkspaceReady=false / productionReady=false**：真实GUI、all-dial/凭据与剩余Step0未验收；无产品profile部署或个人Tunnel自动测试。
+1. 按需保存宿主 CLI 路径覆盖及托管授权。默认 external/manual；未授权或未检测到 CLI 时不能启动托管通道。预检须另行确认。
+2. 添加通道，填写名称、Tunnel ID、远端端口及模式。保存不启动。
+3. 在列表显式启动通道，等待显示实际 loopback 端口；也可以停止、重启、编辑或删除。
+4. 添加 Dev Tunnel SSH 机器，选择已保存通道，填写 SSH 用户、认证方式及独立确认的 SHA256 主机指纹，然后保存、测试和创建镜像。
 
-全局CLI路径与托管授权在 **dsh-remote统一RemoteSettings → DevTunnel设置** 中保存，无需手工编辑Config文件。默认留空，从宿主PATH自动检测 `devtunnel`，不运行shell/which/CLI，不搜索空或相对/current目录。手动覆盖为可选POSIX绝对路径（例如`/Users/YOU/bin/devtunnel`），不展开`~`；覆盖失败不偷偷回退PATH。界面显示只读检测结果，宿主PATH可能不同于终端。认证专用Settings API要求明确确认、revision乐观校验；改变活动托管设置须确认断开，先完成进程cleanup再应用新路径/授权。保存不执行CLI；预检仍独立确认并使用宿主已保存路径。设置只持久化两个非秘密字段到DSH_HOME下插件数据目录，权限0600、原子替换；坏文件fail closed禁用managed。公开Schemastery Config保留为首次未保存时的兼容默认，默认空路径/托管关闭；Settings保存后优先，不改产品profile。 统一 RemoteSettings 里新增本插件注入的「Dev Tunnel 通道管理」box：活动托管通道（机器/Tunnel ID/端口/回环端点/起始时间）、重试或阻塞状态、最近事件，并可对单条通道显式断开（确认后执行，失败不重试）；数据来自本插件只读路由 `GET /dsh-devtunnel-ssh/channels`（断开为 `POST` 同路径）。managed 连接失败（如 `CONNECT_OUTPUT_REJECTED`）现在会脱敏记录：宿主控制台每次拒绝一行（`ctx.logger`，缺失回落 console），浏览器控制台在 Dev Tunnel 表单打开期间镜像宿主条目，另有只读 `GET /dsh-devtunnel-ssh/diagnostics`；原始 CLI 输出从不落日志/响应（URL/token/长串全部掩码，见[docs/devtunnel-ssh/managed-connect-diagnostics.md](<docs/devtunnel-ssh/managed-connect-diagnostics.md>))。
+已保存的 managed 机器也可在编辑区点击“启动通道”，直接使用已有 Tunnel ID/远端端口：缺少条目时先创建，已有条目则复用。不会自动修改机器配置或连接 SSH。
 
-安装后使用`devtunnel-ssh-status`和`devtunnel-ssh-help`；完整首版external流程已随包提供[MANUAL.md](<MANUAL.md>)。API接线必须走宿主正式认证，无猜测Bearer/cookie脚本。统一 RemoteSettings 仅在 authenticated status 的 `sshCarrierCapabilities.devTunnelManaged=true` 时允许选 managed；默认仍是 external。
+通道可在没有 SSH 机器时独立运行，也可由多台机器共享。SSH 释放引用不停止 connect；停止、重启、编辑或删除通道会使借用它的旧 SSH 连接失效。停止后，后台 Git 查询及 SSH 重连不能自动启动通道。显式启动期间有界重试，运行中断线后等待用户启动或重启，不重放 SSH 业务。
 
-受控本地pack检查：`npm pack --dry-run --json --ignore-scripts`。未提供自动安装脚本。本仓[合同与证据](<docs/devtunnel-ssh/adapter-contract.md>)仅源码开发参考，不打入包。
+列表包含所有已保存通道，包括 stopped/error。external 条目只登记用户管理的回环端点，不控制外部进程。宿主重载后 managed 条目保持 stopped。旧常驻配置首次只投影成停止的待保存条目，不自动连接或写入；旧 managed 机器可按相同 Tunnel ID/远端端口匹配列表通道，显式选择后保存 channelId。原目标身份算法不变，旧镜像身份不因动态端口改变。
+
+## Git 与机器身份边界
+
+carrier 机器可以没有顶层 `host`/`port`；它不是以当前 `127.0.0.1` 转发端口保存的普通 SSH 机器。canonical connector identity 只标识 Dev Tunnel 目标，lease 的 `dialHost`/`dialPort` 与 `generation` 属于运行代；端点变化不能改变目标/镜像身份，旧代失效后不得继续拨号。
+
+carrier 镜像的 Git snapshot 仍由 `dsh-remote` 的 `/git-workspace` 提供，Git marker 消费方须接受 transport-neutral 机器摘要（包括无直接 host 的 carrier）。本插件不伪造 host/port、不提供第二套 Git 服务；repo 与 nonRepo 的 wire 兼容修复需生产方与消费者共同验收。源码契约及检查项见 [adapter 契约](<docs/devtunnel-ssh/adapter-contract.md>)。
+
+## 边界与存储
+
+两端需用户自行安装并登录官方 devtunnel，远端需已授权的 sshd；本插件不安装、登录、启用服务、读取凭据或修改防火墙。CLI 默认从宿主 PATH 检测，可选 POSIX 绝对路径覆盖。CLI/授权设置保存在 `$DSH_HOME/devtunnel-ssh/devtunnel-settings.json`，通道目录独立保存在 `devtunnel-channels.json`；文件权限 0600、原子替换、revision 乐观锁，不修改产品 profile。动态端口、进程、generation、SSH 认证信息不写入托管通道配置。
+
+UI 经 `ctx.slots.inject` 注入 RemoteSettings，不注册独立 settings page。owner 负责机器写入、全局设置及 preflight 状态机；本插件负责通道列表及自有 `/dsh-devtunnel-ssh/channels` 路由。两侧契约见 [槽位契约 v5](docs/devtunnel-ssh/remote-settings-slot-contract.md)。`exports["./client"]` 与 manifest `dsh.client` 同时声明浏览器半侧。
+
+当前仍为实验包，`productionReady=false`。源码测试不代表个人 Tunnel、实际 GUI 或产品部署验收。包设为 private，未提供自动安装脚本。开发组合测试的兄弟仓 source imports 不是公开 API；低层 adapter 单测不代表生产运行会由 SSH 启动 connect。
+
+运行 `node --test test/*.test.mjs`；打包使用 `npm pack --ignore-scripts`。完整说明见 [MANUAL.md](MANUAL.md)。

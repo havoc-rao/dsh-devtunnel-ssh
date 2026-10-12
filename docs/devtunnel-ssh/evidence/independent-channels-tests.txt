@@ -1,0 +1,1268 @@
+TAP version 13
+# Subtest: real adapter and opt-in parent CRUD/mirror routes remain hostless and fail closed
+ok 1 - real adapter and opt-in parent CRUD/mirror routes remain hostless and fail closed
+  ---
+  duration_ms: 239.652834
+  type: 'test'
+  ...
+# Subtest: actual parent registry validates independent external lease and preserves SSH machine fields
+ok 2 - actual parent registry validates independent external lease and preserves SSH machine fields
+  ---
+  duration_ms: 1.793667
+  type: 'test'
+  ...
+# Subtest: actual registry rejects mixed config, wrong transport and unknown connector fields
+ok 3 - actual registry rejects mixed config, wrong transport and unknown connector fields
+  ---
+  duration_ms: 0.301
+  type: 'test'
+  ...
+# Subtest: actual cache shares pool, revises auth and endpoint, explicit invalidate cleans
+ok 4 - actual cache shares pool, revises auth and endpoint, explicit invalidate cleans
+  ---
+  duration_ms: 12.055459
+  type: 'test'
+  ...
+# Subtest: closed factory triggers cache rebuild rather than stale reuse
+ok 5 - closed factory triggers cache rebuild rather than stale reuse
+  ---
+  duration_ms: 2.458834
+  type: 'test'
+  ...
+# Subtest: actual status shape yields instance experimental support only
+ok 6 - actual status shape yields instance experimental support only
+  ---
+  duration_ms: 1.470458
+  type: 'test'
+  ...
+# Subtest: missing unknown malformed and getter data never promotes support
+ok 7 - missing unknown malformed and getter data never promotes support
+  ---
+  duration_ms: 0.23675
+  type: 'test'
+  ...
+# Subtest: managed requires precise authenticated runtime opt-in and workspace support
+ok 8 - managed requires precise authenticated runtime opt-in and workspace support
+  ---
+  duration_ms: 0.255917
+  type: 'test'
+  ...
+# Subtest: future production claim and auth secret fields remain fenced
+ok 9 - future production claim and auth secret fields remain fenced
+  ---
+  duration_ms: 0.605083
+  type: 'test'
+  ...
+# Subtest: external defaults manual; dynamic port is not logical identity; release never kills CLI
+ok 10 - external defaults manual; dynamic port is not logical identity; release never kills CLI
+  ---
+  duration_ms: 2.964125
+  type: 'test'
+  ...
+# Subtest: machine isolation, active configuration change refusal and abort
+ok 11 - machine isolation, active configuration change refusal and abort
+  ---
+  duration_ms: 1.524792
+  type: 'test'
+  ...
+# Subtest: managed singleflight refcount and owns only injected start
+ok 12 - managed singleflight refcount and owns only injected start
+  ---
+  duration_ms: 0.559708
+  type: 'test'
+  ...
+# Subtest: managed invalid endpoint cleans owned handle; cleanup failure blocks subsequent starts
+ok 13 - managed invalid endpoint cleans owned handle; cleanup failure blocks subsequent starts
+  ---
+  duration_ms: 0.527584
+  type: 'test'
+  ...
+# Subtest: managed process adapter composes with proposed carrier lease contract
+ok 14 - managed process adapter composes with proposed carrier lease contract
+  ---
+  duration_ms: 1.259792
+  type: 'test'
+  ...
+# Subtest: one cancelled concurrent acquire does not abort another owners shared startup
+ok 15 - one cancelled concurrent acquire does not abort another owners shared startup
+  ---
+  duration_ms: 0.73
+  type: 'test'
+  ...
+# Subtest: dispose during managed startup cleans late handle and does not hand out stale lease
+ok 16 - dispose during managed startup cleans late handle and does not hand out stale lease
+  ---
+  duration_ms: 0.433542
+  type: 'test'
+  ...
+# Subtest: closed managed generation waits for cleanup then discovers a new port and generation
+ok 17 - closed managed generation waits for cleanup then discovers a new port and generation
+  ---
+  duration_ms: 6.641667
+  type: 'test'
+  ...
+# Subtest: managed acquisition preserves only safe diagnostics and releases failed entries
+ok 18 - managed acquisition preserves only safe diagnostics and releases failed entries
+  ---
+  duration_ms: 1.856708
+  type: 'test'
+  ...
+# Subtest: managed cleanup failure remains visible even during caller cancellation
+ok 19 - managed cleanup failure remains visible even during caller cancellation
+  ---
+  duration_ms: 0.429083
+  type: 'test'
+  ...
+# Subtest: strict connector denies secrets, anonymous, wildcard, and managed endpoint
+ok 20 - strict connector denies secrets, anonymous, wildcard, and managed endpoint
+  ---
+  duration_ms: 0.112209
+  type: 'test'
+  ...
+# Subtest: snapshot lists live channel identity and stopManaged owns the cleanup
+ok 21 - snapshot lists live channel identity and stopManaged owns the cleanup
+  ---
+  duration_ms: 0.5715
+  type: 'test'
+  ...
+# Subtest: lease handoff events make the SSH layer use of a channel visible
+ok 22 - lease handoff events make the SSH layer use of a channel visible
+  ---
+  duration_ms: 0.308583
+  type: 'test'
+  ...
+# Subtest: a throwing diagnostics sink never affects acquisition or release
+ok 23 - a throwing diagnostics sink never affects acquisition or release
+  ---
+  duration_ms: 2.265875
+  type: 'test'
+  ...
+# Subtest: actual Cordis loads channel routes, persists independent catalog and unloads leases in isolated DSH_HOME
+ok 24 - actual Cordis loads channel routes, persists independent catalog and unloads leases in isolated DSH_HOME
+  ---
+  duration_ms: 196.674834
+  type: 'test'
+  ...
+# Subtest: catalog persists without spawning; SSH cannot start or restart and release never stops connect
+ok 25 - catalog persists without spawning; SSH cannot start or restart and release never stops connect
+  ---
+  duration_ms: 51.92725
+  type: 'test'
+  ...
+# Subtest: legacy managed machines match a saved target; edits cannot redirect trusted machines
+ok 26 - legacy managed machines match a saved target; edits cannot redirect trusted machines
+  ---
+  duration_ms: 30.757292
+  type: 'test'
+  ...
+# Subtest: catalog has strict CRUD, revision conflicts, unique targets and persisted deletion
+ok 27 - catalog has strict CRUD, revision conflicts, unique targets and persisted deletion
+  ---
+  duration_ms: 62.079625
+  type: 'test'
+  ...
+# Subtest: external entries are registered only and no process action is accepted
+ok 28 - external entries are registered only and no process action is accepted
+  ---
+  duration_ms: 52.045833
+  type: 'test'
+  ...
+# Subtest: process exit invalidates all leases and stays failed without background reconnect
+ok 29 - process exit invalidates all leases and stays failed without background reconnect
+  ---
+  duration_ms: 7.900958
+  type: 'test'
+  ...
+# Subtest: stop during startup aborts and waits for late handle cleanup; no leaked process
+ok 30 - stop during startup aborts and waits for late handle cleanup; no leaked process
+  ---
+  duration_ms: 27.053625
+  type: 'test'
+  ...
+# Subtest: cleanup failure poisons the channel and cannot be cleared by stop, restart or edit
+ok 31 - cleanup failure poisons the channel and cannot be cleared by stop, restart or edit
+  ---
+  duration_ms: 17.444417
+  type: 'test'
+  ...
+# Subtest: legacy resident loads as stopped migration preview, with no automatic write or spawn
+ok 32 - legacy resident loads as stopped migration preview, with no automatic write or spawn
+  ---
+  duration_ms: 11.594417
+  type: 'test'
+  ...
+# Subtest: global settings require confirmation to stop channels even with no SSH references
+ok 33 - global settings require confirmation to stop channels even with no SSH references
+  ---
+  duration_ms: 9.780459
+  type: 'test'
+  ...
+# Subtest: plugin reload reads saved channels as stopped and never reconnects on SSH demand
+ok 34 - plugin reload reads saved channels as stopped and never reconnects on SSH demand
+  ---
+  duration_ms: 11.923709
+  type: 'test'
+  ...
+# Subtest: independent channel with real SSH wire: shared process, pool close retains it, stop kills PTY and cache renews
+ok 35 - independent channel with real SSH wire: shared process, pool close retains it, stop kills PTY and cache renews
+  ---
+  duration_ms: 72.909
+  type: 'test'
+  ...
+# Subtest: GET serves the channel snapshot plus the diagnostics tail
+ok 36 - GET serves the channel snapshot plus the diagnostics tail
+  ---
+  duration_ms: 2.277208
+  type: 'test'
+  ...
+# Subtest: POST stops exactly one channel after strict validation
+ok 37 - POST stops exactly one channel after strict validation
+  ---
+  duration_ms: 12.399375
+  type: 'test'
+  ...
+# Subtest: method and availability fail closed without leaking adapter detail
+ok 38 - method and availability fail closed without leaking adapter detail
+  ---
+  duration_ms: 1.1185
+  type: 'test'
+  ...
+# Subtest: all catalog actions pass the explicit id and revision; unknown properties and missing confirmation reject
+ok 39 - all catalog actions pass the explicit id and revision; unknown properties and missing confirmation reject
+  ---
+  duration_ms: 2.187417
+  type: 'test'
+  ...
+# Subtest: CLI argv uses exact explicit target, no shell, no guessed remap
+ok 40 - CLI argv uses exact explicit target, no shell, no guessed remap
+  ---
+  duration_ms: 0.647208
+  type: 'test'
+  ...
+# Subtest: reject tokens, anonymous switches, remap and implicit target
+ok 41 - reject tokens, anonymous switches, remap and implicit target
+  ---
+  duration_ms: 0.459042
+  type: 'test'
+  ...
+# Subtest: reject trailing line terminators rather than accepting dollar-anchor suffix
+ok 42 - reject trailing line terminators rather than accepting dollar-anchor suffix
+  ---
+  duration_ms: 0.610042
+  type: 'test'
+  ...
+# Subtest: reject malformed configs without invoking accessors or exposing raw failures
+ok 43 - reject malformed configs without invoking accessors or exposing raw failures
+  ---
+  duration_ms: 0.441959
+  type: 'test'
+  ...
+# Subtest: public status cannot contain CLI errors or claim trusted SSH readiness
+ok 44 - public status cannot contain CLI errors or claim trusted SSH readiness
+  ---
+  duration_ms: 0.149375
+  type: 'test'
+  ...
+# Subtest: absolute PATH directories find an executable without running it
+ok 45 - absolute PATH directories find an executable without running it
+  ---
+  duration_ms: 9.781
+  type: 'test'
+  ...
+# Subtest: override takes priority and an invalid override never falls back
+ok 46 - override takes priority and an invalid override never falls back
+  ---
+  duration_ms: 6.195375
+  type: 'test'
+  ...
+# Subtest: regular executable symlinks are accepted but directories are not
+ok 47 - regular executable symlinks are accepted but directories are not
+  ---
+  duration_ms: 3.101417
+  type: 'test'
+  ...
+# Subtest: PATH detection is bounded and ignores cwd including symlink aliases
+ok 48 - PATH detection is bounded and ignores cwd including symlink aliases
+  ---
+  duration_ms: 14.582333
+  type: 'test'
+  ...
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_OUTPUT_REJECTED reason=UNSUPPORTED_FORWARDING stream=stderr machineId=mac-b line1="SSH: Forwarding from 0.0.0.0:1234 to host port 22"
+# [dsh-devtunnel-ssh] code=CHANNEL_LEASED endpoint=127.0.0.1:53162 machineId=mac-b
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# Subtest: browser half is declared in the manifest and registered as a classic client entry
+ok 49 - browser half is declared in the manifest and registered as a classic client entry
+  ---
+  duration_ms: 2.354583
+  type: 'test'
+  ...
+# Subtest: apply injects both owner slots with the frozen id/key and tolerates a missing registry
+ok 50 - apply injects both owner slots with the frozen id/key and tolerates a missing registry
+  ---
+  duration_ms: 3.02875
+  type: 'test'
+  ...
+# Subtest: registration lands even when the occupant loads after the declaration
+ok 51 - registration lands even when the occupant loads after the declaration
+  ---
+  duration_ms: 0.386709
+  type: 'test'
+  ...
+# Subtest: carrier capability gates readiness and the managed default
+ok 52 - carrier capability gates readiness and the managed default
+  ---
+  duration_ms: 0.284833
+  type: 'test'
+  ...
+# Subtest: carrier body matches the owner saved-record shape and omits the endpoint when managed
+ok 53 - carrier body matches the owner saved-record shape and omits the endpoint when managed
+  ---
+  duration_ms: 0.569917
+  type: 'test'
+  ...
+# Subtest: validation covers capability, mode, identity, loopback ports, pin and authentication
+ok 54 - validation covers capability, mode, identity, loopback ports, pin and authentication
+  ---
+  duration_ms: 0.884416
+  type: 'test'
+  ...
+# Subtest: canonical JSON ignores key order so saved and published drafts compare structurally
+ok 55 - canonical JSON ignores key order so saved and published drafts compare structurally
+  ---
+  duration_ms: 0.584125
+  type: 'test'
+  ...
+# Subtest: the type option renders its own button and hint, and honours locked/busy/unavailable
+ok 56 - the type option renders its own button and hint, and honours locked/busy/unavailable
+  ---
+  duration_ms: 2.148
+  type: 'test'
+  ...
+# Subtest: a fresh devtunnel draft gets the capability default mode, agent-first auth and loopback ports through patch
+ok 57 - a fresh devtunnel draft gets the capability default mode, agent-first auth and loopback ports through patch
+  ---
+  duration_ms: 3.341125
+  type: 'test'
+  ...
+# Subtest: the occupant publishes its draft upward and never mutates it behind the owner
+ok 58 - the occupant publishes its draft upward and never mutates it behind the owner
+  ---
+  duration_ms: 0.590875
+  type: 'test'
+  ...
+# Subtest: mode buttons patch the draft and managed stays disabled without host authorization
+ok 59 - mode buttons patch the draft and managed stays disabled without host authorization
+  ---
+  duration_ms: 5.528042
+  type: 'test'
+  ...
+# Subtest: mirror creation stays gated on a saved, non-dirty draft with a path and a scope
+ok 60 - mirror creation stays gated on a saved, non-dirty draft with a path and a scope
+  ---
+  duration_ms: 15.84425
+  type: 'test'
+  ...
+# Subtest: the only host routes this half touches are the read-only channel feed and its stop
+ok 61 - the only host routes this half touches are the read-only channel feed and its stop
+  ---
+  duration_ms: 1.767375
+  type: 'test'
+  ...
+# Subtest: the channel box lists live channels, retry/blocked state and mirrors new events to the console once
+ok 62 - the channel box lists live channels, retry/blocked state and mirrors new events to the console once
+  ---
+  duration_ms: 44.561375
+  type: 'test'
+  ...
+# Subtest: the catalog retains stopped and failed channels in the list
+ok 63 - the catalog retains stopped and failed channels in the list
+  ---
+  duration_ms: 1.620625
+  type: 'test'
+  ...
+# Subtest: the box disconnects one channel explicitly, confirms first and never retries on failure
+ok 64 - the box disconnects one channel explicitly, confirms first and never retries on failure
+  ---
+  duration_ms: 2.266667
+  type: 'test'
+  ...
+# Subtest: a missing host route is reported, not shown as an empty channel list
+ok 65 - a missing host route is reported, not shown as an empty channel list
+  ---
+  duration_ms: 0.486917
+  type: 'test'
+  ...
+# Subtest: the box shows its empty/unavailable state instead of disappearing
+ok 66 - the box shows its empty/unavailable state instead of disappearing
+  ---
+  duration_ms: 0.210542
+  type: 'test'
+  ...
+# Subtest: contract v3: the box renders the owner-supplied global settings section and gates writes/preflight
+ok 67 - contract v3: the box renders the owner-supplied global settings section and gates writes/preflight
+  ---
+  duration_ms: 0.917833
+  type: 'test'
+  ...
+# Subtest: contract v3: an unreachable owner settings machine disables the section instead of hiding it
+ok 68 - contract v3: an unreachable owner settings machine disables the section instead of hiding it
+  ---
+  duration_ms: 0.307208
+  type: 'test'
+  ...
+# Subtest: v4 services and diagnostics separate settings, controls and events
+ok 69 - v4 services and diagnostics separate settings, controls and events
+  ---
+  duration_ms: 0.374958
+  type: 'test'
+  ...
+# Subtest: host SSH agent switch publishes boolean owner changes and refuses changes while busy
+ok 70 - host SSH agent switch publishes boolean owner changes and refuses changes while busy
+  ---
+  duration_ms: 0.33175
+  type: 'test'
+  ...
+# Subtest: catalog creates an independent channel and validates external ports
+ok 71 - catalog creates an independent channel and validates external ports
+  ---
+  duration_ms: 7.515667
+  type: 'test'
+  ...
+# Subtest: real installed Cordis standard schema defaults and rejects nonabsolute paths
+ok 72 - real installed Cordis standard schema defaults and rejects nonabsolute paths
+  ---
+  duration_ms: 0.943
+  type: 'test'
+  ...
+# Subtest: actual Context plugin receives schema default without executing CLI
+ok 73 - actual Context plugin receives schema default without executing CLI
+  ---
+  duration_ms: 3.501708
+  type: 'test'
+  ...
+# Subtest: redaction masks URLs, secret-looking keys, bearer tokens and long runs
+ok 74 - redaction masks URLs, secret-looking keys, bearer tokens and long runs
+  ---
+  duration_ms: 0.885708
+  type: 'test'
+  ...
+# Subtest: redaction bounds length, masks huge runs and strips control characters
+ok 75 - redaction bounds length, masks huge runs and strips control characters
+  ---
+  duration_ms: 0.238791
+  type: 'test'
+  ...
+# Subtest: formatDiagnostic renders one bounded line with the sample
+ok 76 - formatDiagnostic renders one bounded line with the sample
+  ---
+  duration_ms: 0.203083
+  type: 'test'
+  ...
+# Subtest: the sink receives masked, bounded entries and the ring buffer stays bounded
+ok 77 - the sink receives masked, bounded entries and the ring buffer stays bounded
+  ---
+  duration_ms: 0.7925
+  type: 'test'
+  ...
+# Subtest: a hostile or throwing sink never breaks recording and never leaks raw text
+ok 78 - a hostile or throwing sink never breaks recording and never leaks raw text
+  ---
+  duration_ms: 0.212458
+  type: 'test'
+  ...
+# Subtest: config values are validated rather than masked, so a diagnostic stays actionable
+ok 79 - config values are validated rather than masked, so a diagnostic stays actionable
+  ---
+  duration_ms: 0.110291
+  type: 'test'
+  ...
+# Subtest: a machine id is validated like other config values and survives masking
+ok 80 - a machine id is validated like other config values and survives masking
+  ---
+  duration_ms: 0.173917
+  type: 'test'
+  ...
+# Subtest: developer query paginates and filters the retained channel timeline
+ok 81 - developer query paginates and filters the retained channel timeline
+  ---
+  duration_ms: 2.066458
+  type: 'test'
+  ...
+# Subtest: invalid and duplicate query parameters cannot widen the read surface
+ok 82 - invalid and duplicate query parameters cannot widen the read surface
+  ---
+  duration_ms: 11.757959
+  type: 'test'
+  ...
+# Subtest: actual factory forces pin/logical trust and closes pool before adapter lease release
+ok 83 - actual factory forces pin/logical trust and closes pool before adapter lease release
+  ---
+  duration_ms: 3.056083
+  type: 'test'
+  ...
+# Subtest: actual acquisition releases a lease whose dial getter became stale
+ok 84 - actual acquisition releases a lease whose dial getter became stale
+  ---
+  duration_ms: 0.281125
+  type: 'test'
+  ...
+# Subtest: external abort closes factory despite external CLI lifetime being unobserved
+ok 85 - external abort closes factory despite external CLI lifetime being unobserved
+  ---
+  duration_ms: 0.275917
+  type: 'test'
+  ...
+# Subtest: factory awaits asynchronous pool cleanup before releasing independent adapter lease
+ok 86 - factory awaits asynchronous pool cleanup before releasing independent adapter lease
+  ---
+  duration_ms: 0.253583
+  type: 'test'
+  ...
+# Subtest: throwing underlying pool close still releases carrier and rejects reuse
+ok 87 - throwing underlying pool close still releases carrier and rejects reuse
+  ---
+  duration_ms: 0.265834
+  type: 'test'
+  ...
+# Subtest: factory pin required and disposed carrier invalidates pool without resurrecting endpoint
+ok 88 - factory pin required and disposed carrier invalidates pool without resurrecting endpoint
+  ---
+  duration_ms: 0.231291
+  type: 'test'
+  ...
+# Subtest: host sink prefers the cordis logger and never falls through on a healthy logger
+ok 89 - host sink prefers the cordis logger and never falls through on a healthy logger
+  ---
+  duration_ms: 0.711458
+  type: 'test'
+  ...
+# Subtest: host sink falls back to the process console and never throws
+ok 90 - host sink falls back to the process console and never throws
+  ---
+  duration_ms: 0.216166
+  type: 'test'
+  ...
+# Subtest: long-lived output is drained without lifetime quota; remap invalidates ready
+ok 91 - long-lived output is drained without lifetime quota; remap invalidates ready
+  ---
+  duration_ms: 5.452792
+  type: 'test'
+  ...
+# Subtest: spawn is explicit and safe; first forwarding endpoint closes once
+ok 92 - spawn is explicit and safe; first forwarding endpoint closes once
+  ---
+  duration_ms: 0.908791
+  type: 'test'
+  ...
+# Subtest: abort before spawn and asynchronous abort are fail closed
+ok 93 - abort before spawn and asynchronous abort are fail closed
+  ---
+  duration_ms: 0.878833
+  type: 'test'
+  ...
+# Subtest: ready is invalidated after abort and process exit
+ok 94 - ready is invalidated after abort and process exit
+  ---
+  duration_ms: 1.018625
+  type: 'test'
+  ...
+# Subtest: output immediately followed by exit cannot resolve stale ready
+ok 95 - output immediately followed by exit cannot resolve stale ready
+  ---
+  duration_ms: 0.518084
+  type: 'test'
+  ...
+# Subtest: wrong remote port times out; bounded TERM/KILL cleanup with no retry
+ok 96 - wrong remote port times out; bounded TERM/KILL cleanup with no retry
+  ---
+  duration_ms: 36.35525
+  type: 'test'
+  ...
+# Subtest: unconfirmed exit reports bounded cleanup failure
+ok 97 - unconfirmed exit reports bounded cleanup failure
+  ---
+  duration_ms: 28.035042
+  type: 'test'
+  ...
+# Subtest: close after ready rejects unconfirmed cleanup, without exposing raw errors
+ok 98 - close after ready rejects unconfirmed cleanup, without exposing raw errors
+  ---
+  duration_ms: 14.953125
+  type: 'test'
+  ...
+# Subtest: spawn errors are redacted including thrown secrets
+ok 99 - spawn errors are redacted including thrown secrets
+  ---
+  duration_ms: 0.825209
+  type: 'test'
+  ...
+# Subtest: split streams never assemble readiness; oversized output cleans child
+ok 100 - split streams never assemble readiness; oversized output cleans child
+  ---
+  duration_ms: 31.282958
+  type: 'test'
+  ...
+# Subtest: tail finish can report ready, and invalid options never spawn
+ok 101 - tail finish can report ready, and invalid options never spawn
+  ---
+  duration_ms: 0.381417
+  type: 'test'
+  ...
+# Subtest: managed diagnostics mask CLI output and report the parser reason to the sink
+ok 102 - managed diagnostics mask CLI output and report the parser reason to the sink
+  ---
+  duration_ms: 0.876583
+  type: 'test'
+  ...
+# Subtest: managed diagnostics report readiness and the mismatched-port timeout, and stay silent on intentional close
+ok 103 - managed diagnostics report readiness and the mismatched-port timeout, and stay silent on intentional close
+  ---
+  duration_ms: 38.2255
+  type: 'test'
+  ...
+# Subtest: a throwing diagnostics sink never changes connect behaviour
+ok 104 - a throwing diagnostics sink never changes connect behaviour
+  ---
+  duration_ms: 0.431209
+  type: 'test'
+  ...
+# Subtest: host configuration alone gates managed; registration never starts CLI
+ok 105 - host configuration alone gates managed; registration never starts CLI
+  ---
+  duration_ms: 17.186792
+  type: 'test'
+  ...
+# Subtest: plugin spawns explicit connect and holds it until the last workspace lease ends
+ok 106 - plugin spawns explicit connect and holds it until the last workspace lease ends
+  ---
+  duration_ms: 9.285083
+  type: 'test'
+  ...
+# (node:94416) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: startup retry uses bounded backoff, then delivers new port and unchanged closed
+ok 107 - startup retry uses bounded backoff, then delivers new port and unchanged closed
+  ---
+  duration_ms: 9.543709
+  type: 'test'
+  ...
+# Subtest: abort cancels each backoff without spending another attempt or spawning
+ok 108 - abort cancels each backoff without spending another attempt or spawning
+  ---
+  duration_ms: 1.014541
+  type: 'test'
+  ...
+# Subtest: initial plus three attempts is the shared lifetime unstable budget
+ok 109 - initial plus three attempts is the shared lifetime unstable budget
+  ---
+  duration_ms: 0.419875
+  type: 'test'
+  ...
+# Subtest: post-ready exits share cooldown and budget across later acquisitions; no keepalive
+ok 110 - post-ready exits share cooldown and budget across later acquisitions; no keepalive
+  ---
+  duration_ms: 5.520917
+  type: 'test'
+  ...
+# Subtest: dangerous startup errors never retry, even after another acquire
+ok 111 - dangerous startup errors never retry, even after another acquire
+  ---
+  duration_ms: 2.376958
+  type: 'test'
+  ...
+# Subtest: stable lifetime resets budget lazily at 30 seconds without background restart
+ok 112 - stable lifetime resets budget lazily at 30 seconds without background restart
+  ---
+  duration_ms: 0.475625
+  type: 'test'
+  ...
+# Subtest: explicit close and ready abort do not count as unstable failures
+ok 113 - explicit close and ready abort do not count as unstable failures
+  ---
+  duration_ms: 0.415166
+  type: 'test'
+  ...
+# Subtest: same target cannot overlap startup, live child, or actual cleanup
+ok 114 - same target cannot overlap startup, live child, or actual cleanup
+  ---
+  duration_ms: 0.243584
+  type: 'test'
+  ...
+# Subtest: cleanup failure after unexpected exit poisons target and prevents leaked replacements
+ok 115 - cleanup failure after unexpected exit poisons target and prevents leaked replacements
+  ---
+  duration_ms: 1.247333
+  type: 'test'
+  ...
+# Subtest: late successful start after abort is cleaned before rejecting
+ok 116 - late successful start after abort is cleaned before rejecting
+  ---
+  duration_ms: 1.172625
+  type: 'test'
+  ...
+# Subtest: malformed returned endpoint cleans once and blocks target; late close waits for cleanup
+ok 117 - malformed returned endpoint cleans once and blocks target; late close waits for cleanup
+  ---
+  duration_ms: 0.291208
+  type: 'test'
+  ...
+# Subtest: budget identity is tunnel plus remote port, not unrelated targets
+ok 118 - budget identity is tunnel plus remote port, not unrelated targets
+  ---
+  duration_ms: 0.158417
+  type: 'test'
+  ...
+# Subtest: invalid config and pre-aborted input allocate no resources
+ok 119 - invalid config and pre-aborted input allocate no resources
+  ---
+  duration_ms: 0.271375
+  type: 'test'
+  ...
+# Subtest: actual parent pool/cache recovery keeps pin and identity, changes generation, never replays exec
+ok 120 - actual parent pool/cache recovery keeps pin and identity, changes generation, never replays exec
+  ---
+  duration_ms: 2.291542
+  type: 'test'
+  ...
+# Subtest: old carrier SSH lease becomes stale; subsequent acquire gets new endpoint only
+ok 121 - old carrier SSH lease becomes stale; subsequent acquire gets new endpoint only
+  ---
+  duration_ms: 0.701917
+  type: 'test'
+  ...
+# Subtest: the starter exposes supervisor retry/blocked state for the channel panel
+ok 122 - the starter exposes supervisor retry/blocked state for the channel panel
+  ---
+  duration_ms: 0.363833
+  type: 'test'
+  ...
+# Subtest: dynamic local port is selected by remote port across arbitrary chunks
+ok 123 - dynamic local port is selected by remote port across arbitrary chunks
+  ---
+  duration_ms: 0.911959
+  type: 'test'
+  ...
+# Subtest: IPv6 and changed automatic local mapping are supported
+ok 124 - IPv6 and changed automatic local mapping are supported
+  ---
+  duration_ms: 0.157625
+  type: 'test'
+  ...
+# Subtest: wildcard, invalid ports, unknown forwarding grammar and huge lines fail closed
+ok 125 - wildcard, invalid ports, unknown forwarding grammar and huge lines fail closed
+  ---
+  duration_ms: 0.228417
+  type: 'test'
+  ...
+# Subtest: cumulative output bound, no raw secret in errors
+ok 126 - cumulative output bound, no raw secret in errors
+  ---
+  duration_ms: 0.129125
+  type: 'test'
+  ...
+# Subtest: observations name the failure reason without leaking CLI text through the error
+ok 127 - observations name the failure reason without leaking CLI text through the error
+  ---
+  duration_ms: 0.367542
+  type: 'test'
+  ...
+# Subtest: a throwing observer never changes parsing behaviour
+ok 128 - a throwing observer never changes parsing behaviour
+  ---
+  duration_ms: 0.102166
+  type: 'test'
+  ...
+# Subtest: the sentence-final period the current CLI prints is accepted, nothing looser
+ok 129 - the sentence-final period the current CLI prints is accepted, nothing looser
+  ---
+  duration_ms: 0.219541
+  type: 'test'
+  ...
+# Subtest: close is single-flight and signals only the supplied handle
+ok 130 - close is single-flight and signals only the supplied handle
+  ---
+  duration_ms: 0.8895
+  type: 'test'
+  ...
+# Subtest: already exited process is never signalled
+ok 131 - already exited process is never signalled
+  ---
+  duration_ms: 0.104833
+  type: 'test'
+  ...
+# Subtest: TERM escalates once to KILL and waits for confirmed exit
+ok 132 - TERM escalates once to KILL and waits for confirmed exit
+  ---
+  duration_ms: 6.247417
+  type: 'test'
+  ...
+# Subtest: unconfirmed exit fails closed after bounded waits, with no repeated cleanup
+ok 133 - unconfirmed exit fails closed after bounded waits, with no repeated cleanup
+  ---
+  duration_ms: 10.880333
+  type: 'test'
+  ...
+# Subtest: failed exit observation is not success and does not leak raw errors
+ok 134 - failed exit observation is not success and does not leak raw errors
+  ---
+  duration_ms: 0.169166
+  type: 'test'
+  ...
+# Subtest: signal failures are redacted and do not cancel bounded escalation
+ok 135 - signal failures are redacted and do not cancel bounded escalation
+  ---
+  duration_ms: 7.0925
+  type: 'test'
+  ...
+# Subtest: reject invalid handles and unbounded timeout settings
+ok 136 - reject invalid handles and unbounded timeout settings
+  ---
+  duration_ms: 0.566667
+  type: 'test'
+  ...
+# Subtest: host-local fixed runner defaults no login and JSON remains unknown/redacted
+ok 137 - host-local fixed runner defaults no login and JSON remains unknown/redacted
+  ---
+  duration_ms: 14.6695
+  type: 'test'
+  ...
+# Subtest: output cap terminates owned child and does not expose partial output
+ok 138 - output cap terminates owned child and does not expose partial output
+  ---
+  duration_ms: 0.231042
+  type: 'test'
+  ...
+# Subtest: absent configured path returns safe guidance without spawning
+ok 139 - absent configured path returns safe guidance without spawning
+  ---
+  duration_ms: 0.273208
+  type: 'test'
+  ...
+# Subtest: preflight dynamically uses saved settings, never request executable
+ok 140 - preflight dynamically uses saved settings, never request executable
+  ---
+  duration_ms: 4.76375
+  type: 'test'
+  ...
+# Subtest: reactive route requires explicit confirmation and denies browser executable
+ok 141 - reactive route requires explicit confirmation and denies browser executable
+  ---
+  duration_ms: 2.342167
+  type: 'test'
+  ...
+# Subtest: default only requests version and help, never login or installation
+ok 142 - default only requests version and help, never login or installation
+  ---
+  duration_ms: 1.114792
+  type: 'test'
+  ...
+# Subtest: login requires explicit boolean opt-in and never exposes identity
+ok 143 - login requires explicit boolean opt-in and never exposes identity
+  ---
+  duration_ms: 1.745
+  type: 'test'
+  ...
+# Subtest: missing CLI, raw runner failures and unsupported output are sanitized
+ok 144 - missing CLI, raw runner failures and unsupported output are sanitized
+  ---
+  duration_ms: 0.49225
+  type: 'test'
+  ...
+# Subtest: unknown help cannot authorize user show; no timeout retries
+ok 145 - unknown help cannot authorize user show; no timeout retries
+  ---
+  duration_ms: 8.913
+  type: 'test'
+  ...
+# Subtest: official multiline version extracts one numeric version and discards service output
+ok 146 - official multiline version extracts one numeric version and discards service output
+  ---
+  duration_ms: 0.302542
+  type: 'test'
+  ...
+# Subtest: parser is bounded, strict and only returns allowlisted statuses
+ok 147 - parser is bounded, strict and only returns allowlisted statuses
+  ---
+  duration_ms: 0.14875
+  type: 'test'
+  ...
+# Subtest: invalid inputs never invoke runner and there is no default real runner
+ok 148 - invalid inputs never invoke runner and there is no default real runner
+  ---
+  duration_ms: 0.345416
+  type: 'test'
+  ...
+# Subtest: saved-machine probe reuses the real supervisor generation without closing the business lease
+ok 149 - saved-machine probe reuses the real supervisor generation without closing the business lease
+  ---
+  duration_ms: 1.750292
+  type: 'test'
+  ...
+# Subtest: cancelling a saved-machine probe releases only its own shared reference
+ok 150 - cancelling a saved-machine probe releases only its own shared reference
+  ---
+  duration_ms: 1.038417
+  type: 'test'
+  ...
+# Subtest: actual Cordis reactive injection follows late provider and replacement namespace
+ok 151 - actual Cordis reactive injection follows late provider and replacement namespace
+  ---
+  duration_ms: 9.111834
+  type: 'test'
+  ...
+# Subtest: normalizer accepts endpoint and mode changes with same canonical descriptor
+ok 152 - normalizer accepts endpoint and mode changes with same canonical descriptor
+  ---
+  duration_ms: 2.008917
+  type: 'test'
+  ...
+# Subtest: normalizer rejects target/pin replacement and connector identity or secrets
+ok 153 - normalizer rejects target/pin replacement and connector identity or secrets
+  ---
+  duration_ms: 0.366792
+  type: 'test'
+  ...
+# Subtest: whitelist excludes top-level routing/trust forgeries but keeps auth outside connector
+ok 154 - whitelist excludes top-level routing/trust forgeries but keeps auth outside connector
+  ---
+  duration_ms: 0.215167
+  type: 'test'
+  ...
+# Subtest: missing or rejecting public carrier API does not break host
+ok 155 - missing or rejecting public carrier API does not break host
+  ---
+  duration_ms: 0.447458
+  type: 'test'
+  ...
+# Subtest: throwing optional API getter fails closed with an explicit workspace gate
+ok 156 - throwing optional API getter fails closed with an explicit workspace gate
+  ---
+  duration_ms: 0.081458
+  type: 'test'
+  ...
+# Subtest: explicit proposed API registration and lifetime disposal
+ok 157 - explicit proposed API registration and lifetime disposal
+  ---
+  duration_ms: 0.643125
+  type: 'test'
+  ...
+# Subtest: optional API unavailable leaves host intact
+ok 158 - optional API unavailable leaves host intact
+  ---
+  duration_ms: 0.430042
+  type: 'test'
+  ...
+# Subtest: independent entry safely registers diagnostic and carrier with owned disposers
+ok 159 - independent entry safely registers diagnostic and carrier with owned disposers
+  ---
+  duration_ms: 0.390334
+  type: 'test'
+  ...
+# Subtest: loader unload invalidates active external leases using collected disposer
+ok 160 - loader unload invalidates active external leases using collected disposer
+  ---
+  duration_ms: 1.933375
+  type: 'test'
+  ...
+# Subtest: host public Loader resolves carrier in exact returned namespace and disposes registration
+ok 161 - host public Loader resolves carrier in exact returned namespace and disposes registration
+  ---
+  duration_ms: 0.595958
+  type: 'test'
+  ...
+# Subtest: explicit resolver wins over host Loader and import failure stays fail closed
+ok 162 - explicit resolver wins over host Loader and import failure stays fail closed
+  ---
+  duration_ms: 0.237375
+  type: 'test'
+  ...
+# Subtest: missing public export reports capability gate not ready
+ok 163 - missing public export reports capability gate not ready
+  ---
+  duration_ms: 0.105917
+  type: 'test'
+  ...
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# [dsh-devtunnel-ssh] code=CONNECT_READY reason=FORWARDING_MATCHED endpoint=127.0.0.1:53162
+# Subtest: dsh-remote declares the three transport slots and this plugin fills them
+ok 164 - dsh-remote declares the three transport slots and this plugin fills them
+  ---
+  duration_ms: 18.296875
+  type: 'test'
+  ...
+# Subtest: the channel box renders inside the owner page with the injected panel
+ok 165 - the channel box renders inside the owner page with the injected panel
+  ---
+  duration_ms: 13.206916
+  type: 'test'
+  ...
+# Subtest: an absent panel occupant leaves no placeholder in the owner page
+ok 166 - an absent panel occupant leaves no placeholder in the owner page
+  ---
+  duration_ms: 3.753583
+  type: 'test'
+  ...
+# Subtest: the owner page renders both transport buttons and only the plugin renders the devtunnel form
+ok 167 - the owner page renders both transport buttons and only the plugin renders the devtunnel form
+  ---
+  duration_ms: 8.233417
+  type: 'test'
+  ...
+# Subtest: selecting the injected type renders the injected channel mode and fields, and saving posts the plugin draft
+ok 168 - selecting the injected type renders the injected channel mode and fields, and saving posts the plugin draft
+  ---
+  duration_ms: 13.132875
+  type: 'test'
+  ...
+# Subtest: saved carrier testing preserves machine identity and rejects an unsaved draft
+ok 169 - saved carrier testing preserves machine identity and rejects an unsaved draft
+  ---
+  duration_ms: 2.00825
+  type: 'test'
+  ...
+# Subtest: the owner gates saving on the injected capability-validated draft
+ok 170 - the owner gates saving on the injected capability-validated draft
+  ---
+  duration_ms: 3.168209
+  type: 'test'
+  ...
+# Subtest: an unavailable carrier disables the injected type option while SSH stays usable
+ok 171 - an unavailable carrier disables the injected type option while SSH stays usable
+  ---
+  duration_ms: 0.765583
+  type: 'test'
+  ...
+# Subtest: load order does not matter: declaring first or injecting first both compose
+ok 172 - load order does not matter: declaring first or injecting first both compose
+  ---
+  duration_ms: 1.999875
+  type: 'test'
+  ...
+# Subtest: resident settings whitelist: ids, modes and consistency, legacy normalization
+ok 173 - resident settings whitelist: ids, modes and consistency, legacy normalization
+  ---
+  duration_ms: 0.914875
+  type: 'test'
+  ...
+# Subtest: actual entry Settings API updates registry capabilities and survives reload without CLI
+ok 174 - actual entry Settings API updates registry capabilities and survives reload without CLI
+  ---
+  duration_ms: 22.156667
+  type: 'test'
+  ...
+# Subtest: actual entry installs the read-only diagnostics route before any connect happens
+ok 175 - actual entry installs the read-only diagnostics route before any connect happens
+  ---
+  duration_ms: 4.274209
+  type: 'test'
+  ...
+# Subtest: exact host route GET awaits snapshot, public runtime metadata preserved, private data stripped
+ok 176 - exact host route GET awaits snapshot, public runtime metadata preserved, private data stripped
+  ---
+  duration_ms: 2.176458
+  type: 'test'
+  ...
+# Subtest: POST strictly validated, awaits runtime update and returns snapshot
+ok 177 - POST strictly validated, awaits runtime update and returns snapshot
+  ---
+  duration_ms: 11.238375
+  type: 'test'
+  ...
+# Subtest: POST rejects malformed, oversized, unknown or secret keys before runtime
+ok 178 - POST rejects malformed, oversized, unknown or secret keys before runtime
+  ---
+  duration_ms: 8.565792
+  type: 'test'
+  ...
+# Subtest: empty override permits managed authorization and returns safe PATH detection
+ok 179 - empty override permits managed authorization and returns safe PATH detection
+  ---
+  duration_ms: 0.304625
+  type: 'test'
+  ...
+# Subtest: method 405, safe allowlist statuses, raw error details never leak
+ok 180 - method 405, safe allowlist statuses, raw error details never leak
+  ---
+  duration_ms: 5.141834
+  type: 'test'
+  ...
+# Subtest: invalid runtime result and unavailable service fail safely; optional webServer supported
+ok 181 - invalid runtime result and unavailable service fail safely; optional webServer supported
+  ---
+  duration_ms: 0.210542
+  type: 'test'
+  ...
+# Subtest: diagnostics route is read-only and serves only masked, bounded entries
+ok 182 - diagnostics route is read-only and serves only masked, bounded entries
+  ---
+  duration_ms: 0.971041
+  type: 'test'
+  ...
+# Subtest: diagnostics route fails closed when the sink is unavailable
+ok 183 - diagnostics route fails closed when the sink is unavailable
+  ---
+  duration_ms: 0.11525
+  type: 'test'
+  ...
+# Subtest: empty authorized override enables only when PATH finds CLI, without spawning
+ok 184 - empty authorized override enables only when PATH finds CLI, without spawning
+  ---
+  duration_ms: 2.643959
+  type: 'test'
+  ...
+# Subtest: not-found empty override can persist authorization and never builds or spawns
+ok 185 - not-found empty override can persist authorization and never builds or spawns
+  ---
+  duration_ms: 0.914542
+  type: 'test'
+  ...
+# Subtest: refresh detects PATH changes without spawning and preserves active starter and endpoint
+ok 186 - refresh detects PATH changes without spawning and preserves active starter and endpoint
+  ---
+  duration_ms: 1.66375
+  type: 'test'
+  ...
+# Subtest: refresh serializes with update and preflight; dispose cannot resurrect starter
+ok 187 - refresh serializes with update and preflight; dispose cannot resurrect starter
+  ---
+  duration_ms: 0.38525
+  type: 'test'
+  ...
+# Subtest: lease acquired during refresh keeps its original detected executable
+ok 188 - lease acquired during refresh keeps its original detected executable
+  ---
+  duration_ms: 0.631292
+  type: 'test'
+  ...
+# Subtest: disabled managed still detects CLI and supports preflight without starter
+ok 189 - disabled managed still detects CLI and supports preflight without starter
+  ---
+  duration_ms: 0.125667
+  type: 'test'
+  ...
+# Subtest: settings apply closes active generations before swapping executable, external survives
+ok 190 - settings apply closes active generations before swapping executable, external survives
+  ---
+  duration_ms: 5.858792
+  type: 'test'
+  ...
+# Subtest: saving unchanged Config defaults persists an override without disconnecting
+ok 191 - saving unchanged Config defaults persists an override without disconnecting
+  ---
+  duration_ms: 0.264625
+  type: 'test'
+  ...
+# Subtest: revision, authorization and invalid settings fail before disconnection
+ok 192 - revision, authorization and invalid settings fail before disconnection
+  ---
+  duration_ms: 0.380917
+  type: 'test'
+  ...
+# Subtest: preflight uses saved executable and serializes with saves; corrupt store disables
+ok 193 - preflight uses saved executable and serializes with saves; corrupt store disables
+  ---
+  duration_ms: 1.340833
+  type: 'test'
+  ...
+# Subtest: cleanup failure blocks settings and never saves or restarts
+ok 194 - cleanup failure blocks settings and never saves or restarts
+  ---
+  duration_ms: 0.360834
+  type: 'test'
+  ...
+# Subtest: channel catalog is independent of attached SSH carrier state
+ok 195 - channel catalog is independent of attached SSH carrier state
+  ---
+  duration_ms: 0.102458
+  type: 'test'
+  ...
+# Subtest: missing file uses copied config; atomic persist has schema, increasing revision and 0600
+ok 196 - missing file uses copied config; atomic persist has schema, increasing revision and 0600
+  ---
+  duration_ms: 25.347583
+  type: 'test'
+  ...
+# Subtest: strict path, boolean, enabled path and secret validation
+ok 197 - strict path, boolean, enabled path and secret validation
+  ---
+  duration_ms: 2.3515
+  type: 'test'
+  ...
+# Subtest: optimistic checks serialize writers; stale save never changes persisted settings
+ok 198 - optimistic checks serialize writers; stale save never changes persisted settings
+  ---
+  duration_ms: 14.929916
+  type: 'test'
+  ...
+# Subtest: corrupt, oversized, invalid schema and secret files fail closed despite enabled defaults
+ok 199 - corrupt, oversized, invalid schema and secret files fail closed despite enabled defaults
+  ---
+  duration_ms: 12.409375
+  type: 'test'
+  ...
+# Subtest: symlink and nonregular file/directory refused with safe errors and no target writes
+ok 200 - symlink and nonregular file/directory refused with safe errors and no target writes
+  ---
+  duration_ms: 6.520625
+  type: 'test'
+  ...
+# Subtest: failed write never updates memory or creates settings; raw filesystem path not leaked
+ok 201 - failed write never updates memory or creates settings; raw filesystem path not leaked
+  ---
+  duration_ms: 7.436125
+  type: 'test'
+  ...
+# Subtest: pure canonical descriptor excludes transient endpoint and managed mode
+ok 202 - pure canonical descriptor excludes transient endpoint and managed mode
+  ---
+  duration_ms: 0.616084
+  type: 'test'
+  ...
+1..202
+# tests 202
+# suites 0
+# pass 202
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 544.285667
