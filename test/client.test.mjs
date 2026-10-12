@@ -274,8 +274,8 @@ test('the only host routes this half touches are the read-only channel feed and 
 })
 
 const feed = {
-  ok: true, revision: 2, enabled: true, activeManaged: 1,
-  channels: [{ machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture.euw', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 }],
+  ok: true, revision: 2, catalogRevision: 3, enabled: true, activeManaged: 1,
+  channels: [{ channelId: 'channel-b', name: 'Build B', mode: 'managed', tunnelId: 'fixture.euw', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 }],
   supervisor: [{ tunnelId: 'other.euw', remotePort: 22, active: false, pending: false, failures: 2, blocked: 'CONNECT_OUTPUT_REJECTED', cooldownUntil: null }],
   recent: [
     { seq: 1, at: 1760000001000, code: 'CONNECT_OUTPUT_REJECTED', machineId: 'mac-b', reason: 'UNSUPPORTED_FORWARDING', stream: 'stderr', sample: ['SSH: Forwarding from 0.0.0.0:1234 to host port 22'] },
@@ -284,7 +284,25 @@ const feed = {
   ],
 }
 
-function panelRig({ payload = feed, stopFails = false, stopError = 'CHANNELS_UNAVAILABLE', routeMissing = false, answers, machines = [{ id: 'mac-b', name: 'Build B' }], status = CAPABLE, busy = false } = {}) {
+/** Owner-side useTunnelSettings surface, as the panel receives it through the
+ *  `settings.remote.machine.transport.panel` owner props (contract v3). */
+function mockTunnel(over = {}) {
+  return {
+    tunnelSettings: {
+      ok: true, available: true, revision: 7, source: 'config', activeManaged: 0,
+      settings: { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' },
+      cli: { status: 'found', source: 'path', resolvedExecutable: '/usr/bin/devtunnel' },
+    },
+    tunnelDraft: { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' },
+    setTunnelDraft() {}, setTunnelProbe() {}, setTunnelMsg() {},
+    tunnelBusy: false, tunnelReady: true, tunnelDirty: false, tunnelValid: true,
+    tunnelErr: '', tunnelMsg: '', tunnelProbe: null,
+    saveTunnelSettings() {}, refreshTunnelSettings() {}, preflightTunnel() {},
+    ...over,
+  }
+}
+
+function panelRig({ payload = feed, stopFails = false, stopError = 'CHANNELS_UNAVAILABLE', routeMissing = false, answers, machines = [{ id: 'mac-b', name: 'Build B' }], status = CAPABLE, busy = false, section, tunnel = mockTunnel() } = {}) {
   const requests = [], confirmations = []
   const fetchImpl = async (url, options = {}) => {
     const body = options.body ? JSON.parse(options.body) : undefined
@@ -321,7 +339,13 @@ function panelRig({ payload = feed, stopFails = false, stopError = 'CHANNELS_UNA
   if (window && typeof window === 'object') {
     window.confirm = message => { confirmations.push(message); return answers ? answers.shift() : true }
   }
-  const pass = () => { env.reset(); return module.DevTunnelPanel({ status, machines, currentId: 'mac-b', scopeDir: '/local/ws', busy }) }
+  const expand = node => {
+    if (Array.isArray(node)) return node.map(expand)
+    if (!node || typeof node !== 'object') return node
+    if (node.type === module.ChannelCatalog) return expand(module.ChannelCatalog(node.props))
+    return { ...node, children: (node.children || []).map(expand) }
+  }
+  const pass = () => { env.reset(); return expand(module.DevTunnelPanel({ status, machines, currentId: 'mac-b', scopeDir: '/local/ws', busy, tunnel, section })) }
   env.reset()
   let tree = pass()
   env.flush()
@@ -344,13 +368,11 @@ test('the channel box lists live channels, retry/blocked state and mirrors new e
     rig.render()
     const body = text(rig.tree)
     assert.match(body, /Build B/)
-    assert.match(body, /fixture\.euw :22/)
+    assert.match(body, /fixture\.euw:22/)
     assert.match(body, /\u2192 127\.0\.0\.1:53162/)
-    assert.match(body, /other\.euw :22/)
     assert.match(body, /CONNECT_OUTPUT_REJECTED/)
     assert.match(body, /mac-b/, 'lease events name the machine whose SSH layer used the channel')
-    assert.match(body, /\u9700\u4eba\u5de5\u5904\u7406|needs manual action/u, 'blocked state is spelled out')
-    assert.ok(findButton(rig.tree, rig.t('panelStop')))
+    assert.ok(findButton(rig.tree, rig.t('channelStop')))
     assert.ok(findButton(rig.tree, rig.t('panelRefresh')))
     // Console mirroring: both new entries once, stable prefix, oldest first.
     assert.equal(logged.length, 3, JSON.stringify(logged))
@@ -363,37 +385,35 @@ test('the channel box lists live channels, retry/blocked state and mirrors new e
   } finally { console.warn = savedWarn }
 })
 
-test('the box distinguishes a retrying channel from a blocked one', async () => {
-  const retrying = panelRig({ payload: { ...feed, activeManaged: 0, channels: [], supervisor: [{ tunnelId: 'other.euw', remotePort: 22, active: false, pending: false, failures: 2, blocked: null, cooldownUntil: null }] } })
-  await settle(); retrying.render()
-  const body = text(retrying.tree)
-  assert.match(body, /other\.euw :22/)
-  assert.match(body, /2 |\u7b2c 2|attempt 2/u)
-  assert.doesNotMatch(body, /\u9700\u4eba\u5de5\u5904\u7406|needs manual action/u)
+test('the catalog retains stopped and failed channels in the list', async () => {
+  const rig = panelRig({ payload: { ...feed, channels: [{ ...feed.channels[0], state: 'error', endpoint: null, error: 'CONNECT_RETRY_EXHAUSTED' }] } })
+  await settle(); rig.render()
+  assert.match(text(rig.tree), /CONNECT_RETRY_EXHAUSTED/)
+  assert.ok(findButton(rig.tree, rig.t('channelStart')))
 })
 
 test('the box disconnects one channel explicitly, confirms first and never retries on failure', async () => {
   const rig = panelRig({ answers: [true] })
   await settle(); rig.render()
-  findButton(rig.tree, rig.t('panelStop')).props.onClick(); await settle(); rig.render()
+  findButton(rig.tree, rig.t('channelStop')).props.onClick(); await settle(); rig.render()
   assert.equal(rig.confirmations.length, 1)
-  assert.match(rig.confirmations[0], /Build B/)
+  assert.match(rig.confirmations[0], /SSH/)
   const post = rig.requests.find(request => request.method === 'POST')
-  assert.deepEqual(post.body, { action: 'stop', machineId: 'mac-b', confirmed: true })
+  assert.deepEqual(post.body, { action: 'stop', channelId: 'channel-b', revision: 3, confirmed: true })
   assert.equal(post.url, '/dsh-devtunnel-ssh/channels')
 
   const declined = panelRig({ answers: [false] })
   await settle(); declined.render()
-  findButton(declined.tree, declined.t('panelStop')).props.onClick()
+  findButton(declined.tree, declined.t('channelStop')).props.onClick()
   await settle()
   assert.equal(declined.requests.some(request => request.method === 'POST'), false, 'declined confirmation posts nothing')
 
   const failing = panelRig({ stopFails: true, answers: [true] })
   await settle(); failing.render()
-  findButton(failing.tree, failing.t('panelStop')).props.onClick()
+  findButton(failing.tree, failing.t('channelStop')).props.onClick()
   await settle(); failing.render()
   assert.equal(failing.requests.filter(request => request.method === 'POST').length, 1, 'failure is not retried')
-  assert.match(text(failing.tree), new RegExp(failing.t('panelErrorUnavailable')))
+  assert.match(text(failing.tree), /CHANNELS_UNAVAILABLE/)
 })
 
 test('a missing host route is reported, not shown as an empty channel list', async () => {
@@ -408,7 +428,168 @@ test('the box shows its empty/unavailable state instead of disappearing', async 
   const empty = panelRig({ payload: { ok: true, revision: 0, enabled: false, activeManaged: 0, channels: [], supervisor: [], recent: [] }, status: null })
   await settle(); empty.render()
   const body = text(empty.tree)
-  assert.match(body, new RegExp(empty.t('panelEmpty')))
-  assert.match(body, new RegExp(empty.t('panelDisabled')))
-  assert.match(body, new RegExp(empty.t('carrierUnavailableHint')))
+  assert.match(body, new RegExp(empty.t('channelEmpty')))
+  assert.match(body, new RegExp(empty.t('panelUnauthorized')))
+  assert.ok(findButton(empty.tree, empty.t('channelAdd')), 'catalog remains independent of SSH availability')
+})
+
+test('contract v3: the box renders the owner-supplied global settings section and gates writes/preflight', () => {
+  const rig = panelRig()
+  rig.render()
+  const body = text(rig.tree)
+  assert.match(body, /连接设置/)
+  assert.match(body, /CLI 路径覆盖/)
+  assert.equal(findInput(rig.tree, 'st-cli').props.value, '', 'draft CLI path comes from the tunnel props')
+  assert.equal(findInput(rig.tree, 'st-cli').props.disabled, false)
+  assert.ok(findButton(rig.tree, rig.t('tunnelSave')), 'save button rendered by the occupant')
+  assert.equal(findButton(rig.tree, rig.t('tunnelSave')).props.disabled, true, 'unchanged settings cannot be saved')
+  assert.equal(findButton(rig.tree, rig.t('tunnelProbe')).props.disabled, false, 'a found CLI at a clean draft permits preflight')
+  assert.match(body, /\/usr\/bin\/devtunnel/, 'resolved executable line is rendered')
+  assert.match(body, /revision 7/, 'meta line is rendered')
+
+  // Editing the draft (a real setTunnelDraft through the props) enables save.
+  let draft = { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' }
+  const editing = panelRig({ tunnel: {
+    ...mockTunnel({ tunnelDirty: true }),
+    get tunnelDraft() { return draft },
+    setTunnelDraft(next) { draft = next },
+  } })
+  editing.render()
+  const input = findInput(editing.tree, 'st-cli')
+  input.props.onChange({ target: { value: '/usr/bin/devtunnel --port' } })
+  editing.render()
+  assert.equal(findInput(editing.tree, 'st-cli').props.value, '/usr/bin/devtunnel --port',
+    'the occupant forwards edits through tunnel.setTunnelDraft')
+  assert.equal(findButton(editing.tree, editing.t('tunnelSave')).props.disabled, false)
+  assert.equal(findButton(editing.tree, editing.t('tunnelProbe')).props.disabled, true, 'dirty settings block preflight')
+})
+
+test('contract v3: an unreachable owner settings machine disables the section instead of hiding it', () => {
+  const rig = panelRig({ tunnel: mockTunnel({ tunnelSettings: null, tunnelReady: false }) })
+  rig.render()
+  const body = text(rig.tree)
+  assert.match(body, /连接设置/, 'the section stays visible when the settings route is missing')
+  assert.equal(findInput(rig.tree, 'st-cli').props.disabled, true)
+  for (const key of ['tunnelSave', 'tunnelProbe', 'tunnelLoginProbe']) {
+    assert.equal(findButton(rig.tree, rig.t(key)).props.disabled, true, key)
+  }
+  assert.equal(findButton(rig.tree, rig.t('tunnelRefresh')).props.disabled, false, 'manual refresh always remains possible')
+})
+
+
+test('v4 services and diagnostics separate settings, controls and events', async () => {
+  const services = panelRig({ section: 'services' })
+  const diagnostics = panelRig({ section: 'diagnostics' })
+  await settle(); services.render(); diagnostics.render()
+  assert.ok(findButton(services.tree, services.t('tunnelSave')))
+  assert.ok(findButton(services.tree, services.t('channelStop')))
+  assert.doesNotMatch(text(services.tree), new RegExp(services.t('panelRecent')))
+  assert.ok(!findButton(diagnostics.tree, diagnostics.t('tunnelSave')))
+  assert.ok(!findButton(diagnostics.tree, diagnostics.t('channelStop')))
+  assert.match(text(diagnostics.tree), new RegExp(diagnostics.t('panelRecent')))
+  assert.ok(findButton(diagnostics.tree, diagnostics.t('panelRefresh')))
+})
+
+test('host SSH agent switch publishes boolean owner changes and refuses changes while busy', () => {
+  const rig = fieldsRig({ form: { useAgent: true }, locked: true })
+  const toggle = nodes(rig.tree).find(node => node.type === 'HostSwitch')
+  assert.equal(toggle.props.checked, true)
+  assert.equal(toggle.props.label, 'agent')
+  toggle.props.onChange(false)
+  rig.render()
+  assert.deepEqual(rig.calls.checked, [['useAgent', false]])
+  assert.equal(rig.calls.publish.at(-1).body.useAgent, false)
+  const busy = fieldsRig({ form: { useAgent: true }, locked: true, busy: true })
+  const disabled = nodes(busy.tree).find(node => node.type === 'HostSwitch')
+  assert.equal(disabled.props.disabled, true)
+  disabled.props.onChange(false)
+  assert.deepEqual(busy.calls.checked, [])
+})
+
+test('catalog creates an independent channel and validates external ports', async () => {
+  const rig = panelRig({ payload: { ...feed, channels: [] } })
+  await settle(); rig.render()
+  findButton(rig.tree, rig.t('channelAdd')).props.onClick(); rig.render()
+  for (const [key, value] of [['name', 'Standalone'], ['tunnelId', 'standalone.jpe1'], ['remotePort', '22']]) {
+    findInput(rig.tree, key).props.onChange({ target: { value } }); rig.render()
+  }
+  assert.equal(findButton(rig.tree, rig.t('channelSave')).props.disabled, false)
+  await findButton(rig.tree, rig.t('channelSave')).props.onClick(); await settle(); rig.render()
+  assert.deepEqual(rig.requests.find(r => r.method === 'POST').body, {
+    action: 'create', channelId: '', revision: 3, confirmed: true,
+    channel: { name: 'Standalone', mode: 'managed', tunnelId: 'standalone.jpe1', remotePort: 22 },
+  })
+  assert.equal(rig.requests.some(r => r.body?.action === 'start'), false, 'save never starts a channel')
+  findButton(rig.tree, rig.t('channelAdd')).props.onClick(); rig.render()
+  const mode = nodes(rig.tree).find(n => n.type === 'select' && n.props.value === 'managed')
+  mode.props.onChange({ target: { value: 'external' } }); rig.render()
+  findInput(rig.tree, 'localPort').props.onChange({ target: { value: '65536' } }); rig.render()
+  assert.equal(findButton(rig.tree, rig.t('channelSave')).props.disabled, true)
+})
+
+const savedQuickForm = { id: 'saved-mac', name: 'Mac mini', carrierMode: 'managed', tunnelId: 'fixture.jpe1', remotePort: '22' }
+const quickChannel = { channelId: 'channel-existing', name: 'Mac mini', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22, state: 'stopped' }
+test('saved machine quick start creates only a missing channel then starts with the new revision', async () => {
+  const { module } = load(); const calls = []
+  const form = { ...savedQuickForm, privateKeyPath: '/not-for-channel', expectedHostFingerprint: fingerprint }
+  const before = { ...form }
+  const result = await module.startConfiguredChannel(form, async (method, body) => {
+    calls.push({ method, body })
+    if (method === 'GET') return { ok: true, enabled: true, catalogRevision: 4, channels: [] }
+    if (body.action === 'create') return { ok: true, catalogRevision: 5, channelId: quickChannel.channelId, channels: [quickChannel] }
+    return { ok: true }
+  })
+  assert.equal(result, quickChannel.channelId)
+  assert.deepEqual(calls[1].body, { action: 'create', channelId: '', revision: 4, confirmed: true,
+    channel: { name: 'Mac mini', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 } })
+  assert.deepEqual(calls[2].body, { action: 'start', channelId: quickChannel.channelId, revision: 5, confirmed: true })
+  assert.deepEqual(form, before, 'no machine edits or credential forwarding')
+})
+
+test('quick start reuses stopped, starting and ready channels without duplicate creation', async () => {
+  const { module } = load()
+  for (const state of ['stopped', 'starting', 'ready']) {
+    const calls = []
+    await module.startConfiguredChannel(savedQuickForm, async (method, body) => {
+      calls.push(body)
+      return { ok: true, enabled: true, catalogRevision: 8, channels: [{ ...quickChannel, state }] }
+    })
+    assert.equal(calls.length, state === 'stopped' ? 2 : 1)
+    if (state === 'stopped') assert.equal(calls[1].action, 'start')
+  }
+})
+
+test('quick start refuses a missing or changed explicit reference and never retries failures', async () => {
+  const { module } = load()
+  for (const channels of [[], [{ ...quickChannel, tunnelId: 'changed.jpe1' }], [{ ...quickChannel, mode: 'external' }]]) {
+    let calls = 0
+    await assert.rejects(module.startConfiguredChannel({ ...savedQuickForm, channelId: quickChannel.channelId }, async () => {
+      calls++; return { ok: true, enabled: true, catalogRevision: 1, channels }
+    }), /CHANNEL_NOT_FOUND|CHANNEL_TARGET_CHANGED/)
+    assert.equal(calls, 1)
+  }
+  let calls = 0
+  await assert.rejects(module.startConfiguredChannel(savedQuickForm, async (method) => {
+    calls++
+    if (method === 'GET') return { ok: true, enabled: true, catalogRevision: 1, channels: [quickChannel] }
+    throw new Error('SETTINGS_REVISION_CONFLICT')
+  }), /SETTINGS_REVISION_CONFLICT/)
+  assert.equal(calls, 2)
+})
+
+test('saved machine start button uses the channels route only and prevents duplicate clicks', async () => {
+  const requests = []
+  const rig = fieldsRig({ form: savedQuickForm, status: MANAGED, locked: true, fetchImpl: async (url, options = {}) => {
+    const body = options.body && JSON.parse(options.body)
+    requests.push({ url, body })
+    return { ok: true, json: async () => ({ ok: true, enabled: true, catalogRevision: 1, channels: [quickChannel] }) }
+  } })
+  await settle(); rig.render()
+  const button = findButton(rig.tree, 'channelQuickStart')
+  assert.ok(button); assert.equal(button.props.disabled, false)
+  await Promise.all([button.props.onClick(), button.props.onClick()]); await settle(); rig.render()
+  assert.equal(requests.filter(r => r.body).length, 1)
+  assert.equal(requests.find(r => r.body).body.action, 'start')
+  assert.ok(requests.every(r => r.url === '/dsh-devtunnel-ssh/channels'))
+  assert.deepEqual(rig.calls.patch, [])
 })

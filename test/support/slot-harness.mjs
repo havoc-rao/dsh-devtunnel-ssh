@@ -114,7 +114,7 @@ export function loadClient(source, { React, windowOverrides = {}, fetchImpl } = 
     confirm: () => true,
     localStorage: { getItem: () => null },
     ...windowOverrides,
-    __ModuleLoader__: { load: definition => { exports = definition.factory(name => { if (name !== 'react') throw new Error('unexpected require: ' + name); return React }) } },
+    __ModuleLoader__: { load: definition => { exports = definition.factory(name => { if (name === '@deepseek-ai/dsh-client-ui-primitives') return { Switch: 'HostSwitch' }; if (name !== 'react') throw new Error('unexpected require: ' + name); return React }) } },
   }
   const document = { getElementById: () => null, createElement: () => ({ style: {}, set textContent(v) {}, appendChild() {} }), head: { appendChild() {} } }
   const fetch = fetchImpl || (() => { throw new Error('this client half must not fetch') })

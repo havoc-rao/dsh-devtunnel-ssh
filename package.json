@@ -15,7 +15,7 @@
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
       "platform": "web",
-      "inject": ["@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-locale"]
+      "inject": ["@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-locale", "@deepseek-ai/dsh-client-ui-primitives"]
     }
   },
   "scripts": { "test": "node --test test/*.test.mjs" }

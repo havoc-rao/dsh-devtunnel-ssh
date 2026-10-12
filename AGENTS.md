@@ -2,7 +2,7 @@
 
 独立零构建host插件，用户UI统一在兄弟dsh-remote RemoteSettings；禁止重新增加独立settings page。lib为手写源码；runtime只使用公开carrier注册路径，不复制SSH引擎或monkey patch。test内部source imports只是开发组合测试，不表示公开API。
 
-- 机器表单UI按槽位契约注入：dsh-remote 声明 `settings.remote.machine.transport.option`(list) 与 `settings.remote.machine.transport.fields`(keyed, entryKey=transport)，本包浏览器半侧只经 `ctx.slots.inject` + `register` 注入「Dev Tunnel SSH」类型按钮、通道模式与 devtunnel 字段，并把 draft 交回 owner 提交；不直接调用宿主路由、不注册 settings.section、不覆盖他人条目。契约见 docs/devtunnel-ssh/remote-settings-slot-contract.md，改动任一侧前先同步它。
+- 机器表单UI按槽位契约注入：dsh-remote 声明 `settings.remote.machine.transport.option`(list)、`settings.remote.machine.transport.fields`(keyed, entryKey=transport) 与 `settings.remote.machine.transport.panel`(list)，本包浏览器半侧只经 `ctx.slots.inject` + `register` 注入「Dev Tunnel SSH」类型按钮、通道模式与 devtunnel 字段，把 draft 交回 owner 提交，并经 panel 槽位渲染 Dev Tunnel 整卡（全局设置表单 + 常驻 + 通道管理；设置状态机由 owner 经 panel props 的 `tunnel` 传入，契约 v3，本包不自行调用 /settings|/preflight 写路由）；不直接调用宿主路由、不注册 settings.section、不覆盖他人条目。契约见 docs/devtunnel-ssh/remote-settings-slot-contract.md，改动任一侧前先同步它。
 - 浏览器半侧须同时具备 `exports["./client"]` 与 manifest `dsh.client`（platform web + inject renderer/locale），否则不会被装载；`inject` 仅声明 client 组合依赖，不是公开JS API。
 
 - 默认external/manual；managed须宿主明确managedEnabled授权且已从宿主PATH或可选绝对路径覆盖检测CLI后按需启用，恢复有界且不重放SSH业务；productionReady不夸大。保留实际证据PASS/FAIL/NOT RUN；用户与父侧实机证据不冒充本会话执行。

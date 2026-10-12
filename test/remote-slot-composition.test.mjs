@@ -29,15 +29,15 @@ function boot({ status = capable, machines = [], cwd = '/local/ws', order = 'occ
     else if (url.startsWith('/dsh-remote/status')) data = status
     else if (url === '/dsh-remote/machines') data = body ? { ok: true, machine: { ...body, id: 'mac-b' } } : { machines }
     else if (url === '/dsh-devtunnel-ssh/channels') data = {
-      ok: true, revision: 0, enabled: true, activeManaged: 1,
-      channels: [{ machineId: 'mac-b', mode: 'managed', tunnelId: 'fixture.euw', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 }],
+      ok: true, revision: 0, catalogRevision: 1, enabled: true, activeManaged: 1,
+      channels: [{ channelId: 'channel-b', name: 'Mac B', mode: 'managed', tunnelId: 'fixture.euw', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 53162 }, since: 1760000000000, generation: 'g1', refs: 1 }],
       supervisor: [{ tunnelId: 'fixture.euw', remotePort: 22, active: true, pending: false, failures: 0, blocked: null, cooldownUntil: null }],
       recent: [{ seq: 1, at: 1760000001000, code: 'CONNECT_READY', reason: 'FORWARDING_MATCHED', endpoint: { host: '127.0.0.1', port: 53162 } }],
     }
     else if (url.startsWith('/dsh-remote/mirror')) data = { ok: true, localMirror: '/local/mirror/mac-b' }
     else if (url.startsWith('/dsh-devtunnel-ssh/settings')) data = {
       ok: true, available: true, revision: 0, source: 'config', activeManaged: 0,
-      settings: { cliExecutable: '', managedEnabled: false },
+      settings: { cliExecutable: '', managedEnabled: false, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off' },
       cli: { status: 'not-found', source: 'path', resolvedExecutable: '' },
     }
     return { ok: true, status: 200, json: async () => data }
@@ -110,8 +110,9 @@ test('the channel box renders inside the owner page with the injected panel', as
   assert.match(body, /panelTitle|Dev Tunnel channels/u, 'panel title comes from the plugin occupant')
   const panel = nodes(page.tree).find(node => node.props && node.props['data-testid'] === 'devtunnel-channel-panel')
   assert.ok(panel, 'the injected box is mounted in the page')
-  assert.match(text(panel), /fixture\.euw :22/)
-  assert.match(text(panel), /127\.0\.0\.1:53162/)
+  const catalog = nodes(panel).find(n => n.type === world.devtunnel.ChannelCatalog)
+  assert.equal(catalog.props.feed.channels[0].tunnelId, 'fixture.euw')
+  assert.equal(catalog.props.feed.channels[0].endpoint.port, 53162)
   // The box must sit after the machine list and before the add/edit card. The
   // per-test fake renderer flattens the tree, so compare node order instead.
   const order = nodes(page.tree)
@@ -156,7 +157,8 @@ test('selecting the injected type renders the injected channel mode and fields, 
 
   const type = page.input
   await type('cu', 'dev')
-  await type('ctid', 'abc123')
+  const select = nodes(page.tree).find(n => n.type === 'select' && (n.children || []).flat(Infinity).some(c => c?.props?.value === 'channel-b'))
+  select.props.onChange({ target: { value: 'channel-b' } }); await tick(); page.render()
   await type('cfp', fingerprint)
   const save = findButton(page.tree, 'T:settings.save')
   assert.equal(save.props.disabled, false, 'published draft with valid fields enables the owner save')
@@ -168,7 +170,7 @@ test('selecting the injected type renders the injected channel mode and fields, 
   assert.equal(saved.body.action, 'add')
   assert.equal(saved.body.transport, 'ssh')
   assert.equal(saved.body.expectedHostFingerprint, fingerprint)
-  assert.deepEqual(saved.body.connector, { kind: 'devtunnel', mode: 'managed', tunnelId: 'abc123', remotePort: 22 })
+  assert.deepEqual(saved.body.connector, { kind: 'devtunnel', mode: 'managed', channelId: 'channel-b', tunnelId: 'fixture.euw', remotePort: 22 })
 })
 
 test('saved carrier testing preserves machine identity and rejects an unsaved draft', async () => {

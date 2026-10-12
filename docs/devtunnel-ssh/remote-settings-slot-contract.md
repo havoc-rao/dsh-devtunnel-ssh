@@ -1,14 +1,55 @@
-# RemoteSettings 机器表单槽位契约 v1（dsh-remote ↔ dsh-devtunnel-ssh）
+# RemoteSettings 机器表单槽位契约 v5（dsh-remote ↔ dsh-devtunnel-ssh）
 
 用户指令：dsh-remote 统一 RemoteSettings 里的「类型」与 Dev Tunnel 通道模式/字段必须由本插件注入，
 dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings.section`，也不再渲染整页表单。
+
+v3（2026-10-11）：`settings.remote.machine.transport.panel` 的 owner props 增加 `tunnel`
+（dsh-remote 的 `useTunnelSettings` 状态机）；**Dev Tunnel 全局设置卡从 dsh-remote 页面顶部
+迁入该 box**。occupant 渲染整卡（全局设置 + 常驻 + 通道管理），owner 不再渲染设置卡、不重复
+展示常驻状态。渲染层 i18n 文案随迁移进入本插件字典；hook 内 confirm/错误/消息翻译与全部写操作
+仍由 owner 状态机完成。
+
+## v5 独立通道列表（2026-10-11）
+
+本节取代下文旧版 resident 与按 machineId 停止通道的行为。通道配置独立持久化在
+`devtunnel-channels.json`，由本插件拥有；channelId 与 SSH machineId 无关。
+`GET /channels` 返回所有已保存通道（包括 stopped/error），`catalogRevision` 用于写入乐观锁。
+`POST /channels` 接受 `{action, channelId, revision, confirmed:true, channel?}`：
+`create/update` 带严格通道配置 `{name,mode,tunnelId,remotePort,endpoint?}`，create 的 channelId 为
+空串，由宿主生成；`start/stop/restart/delete` 不带 channel。mode 为 managed/external；external
+仅登记 loopback endpoint，禁止 start/stop/restart，不控制外部进程。列表最多 64 条，同一目标
+只登记一次。保存不启动，重载后 managed 通道保持 stopped。旧 resident 配置只在首次读取
+空目录时投影成 stopped 的待保存通道；不自动连接、不自动写文件、不改机器注册表。
+
+SSH connector 增加可选 channelId（兼容旧机器按 tunnelId+remotePort 查找唯一通道）；保留
+目标描述与原 targetIdentity 算法，防止通道编辑重定向旧机器或破坏既有镜像身份。
+carrier acquire 仅借用已就绪通道，release 仅减少引用；停止/故障关闭该代 closed，旧 SSH
+连接随之失效。后台 Git/SSH 查询不能创建或重启进程。显式 start/restart 允许 supervisor
+在本次启动内有界重试；运行中断线显示 error，等待用户操作。清理失败阻止再次启动。
+
+panel 继续由插件渲染，去除 singleton resident 表单，增加独立通道增删改查与启停。
+全局设置/preflight 仍经 owner tunnel hook；通道目录 CRUD/启停使用本插件已有受控 channels
+路由。fields 从 channels 只读获取选择器；新 managed 机器必须选择已保存通道。
+owner 保存/编辑/canonical 快照必须保留 connector.channelId。外部手工端点旧机器保持兼容。
+
+### 已保存机器快捷启动
+
+fields 为已保存 managed 机器提供“启动通道”：用户确认后，读取最新通道目录，以明确
+channelId 或旧机器的 Tunnel ID/远端端口匹配。无 channelId 且不存在目标时，用已有名称与
+目标创建目录条目，再显式 start。已指定但丢失/变更目标的 channelId 不自动替换。
+仅写本插件 channels 路由，不修改机器草稿/注册表，不连接 SSH；旧机器按目标匹配仍可使用。
+启动失败保留已创建条目，提示错误；禁止自动重试写操作。
+
+## v4 设置分区（2026-10-11）
+
+统一入口内增加机器 / 连接服务 / 诊断页签。panel 的配置与运行卡位于机器页添加/编辑机器 box 下方，工作区工具归入连接服务；诊断页单独派发事件区，仅当前页签挂载 panel：`section: "services" | "diagnostics"`。服务仅呈现全局配置、常驻及活动/阻塞状态；诊断仅呈现最近事件。未传 section 时保留 v3 完整呈现以兼容旧 owner。owner 保留设置草稿，切页不丢失修改；机器编辑器默认收起。写入与确认职责不变。
 
 ## 职责划分
 
 | 侧 | 拥有 |
 | --- | --- |
-| dsh-remote（slot owner） | 机器注册表与列表、当前工作区作用域、添加/编辑机器卡片外壳、通用保存/删除/探测/镜像提交、SSH 形态的按钮与字段（自己注册进自己的槽位） |
-| dsh-devtunnel-ssh（occupant） | `Dev Tunnel SSH` 类型按钮与不可用提示、通道模式（外部监听器/托管连接）、全部 devtunnel 字段、devtunnel 校验与连接体（draft）、镜像路径输入与按钮的呈现 |
+| dsh-remote（slot owner） | 机器注册表与列表、当前工作区作用域、添加/编辑机器卡片外壳、通用保存/删除/探测/镜像提交、SSH 形态的按钮与字段（自己注册进自己的槽位）；Dev Tunnel 设置**状态机**（`useTunnelSettings`：/settings 读写、preflight、resident 门控与确认、revision 乐观锁），经 panel owner props 的 `tunnel` 交给占用方渲染 |
+| dsh-devtunnel-ssh（occupant） | `Dev Tunnel SSH` 类型按钮与不可用提示、通道模式（外部监听器/托管连接）、全部 devtunnel 字段、devtunnel 校验与连接体（draft）、镜像路径输入与按钮的呈现；**Dev Tunnel 整卡**（panel 槽位）：全局设置表单（CLI 路径/托管授权/常驻配置/预检按钮，状态经 `props.tunnel` 读写）、常驻状态行、活动通道、重试/阻塞、最近事件、断开 |
 
 插件不直接调用宿主路由：所有写操作经 owner 回调回到 dsh-remote 的公开机器 API。
 
@@ -50,15 +91,26 @@ dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings
 
 ### `settings.remote.machine.transport.panel`
 
-* kind `list`，scope `root`；渲染位置：机器列表卡片之后、添加/编辑机器卡片之前（整宽 box）
-* owner props：`{ status, machines, currentId, scopeDir, busy }`
+* kind `list`，scope `root`；渲染位置：机器页添加/编辑 box 下方，以及诊断页签（整宽 box，按 section 分区）
+* owner props：`{ status, machines, currentId, scopeDir, busy, tunnel, section }`（v4 起含 `section`）
   * `status: object | null` 当前作用域 `/dsh-remote/status`（含 `sshCarrierCapabilities`）
   * `machines: array` 机器注册表当前快照（occupant 用它把 `machineId` 映射成名字/目标）
   * `currentId: string`、`scopeDir: string`、`busy: boolean`
+  * `tunnel`：owner `useTunnelSettings` 的返回（状态机；渲染层消费，写操作全经它）：
+    `{ tunnelSettings, tunnelDraft, setTunnelDraft, tunnelBusy, tunnelErr, tunnelMsg, tunnelProbe,
+       tunnelReady, tunnelDirty, tunnelPath, tunnelValid, tunnelResident,
+       refreshTunnelSettings, saveTunnelSettings, preflightTunnel }`
+    * 表单编辑必须经 `setTunnelDraft`，并同时 `setTunnelProbe(null)` + `setTunnelMsg('')`（作废过期反馈）
+    * `tunnelErr`/`tunnelMsg`/`tunnelProbe` 已是宿主侧翻译后的字符串/对象，occupant 原样展示
+    * `confirm` 与 `/settings`、`/preflight` 写请求全部在 hook 内完成，occupant 不得自行调用宿主路由
 * 注册项：dsh-devtunnel-ssh `{ name, id: 'devtunnel-ssh', order: 10, locale }`
-* occupant 职责：自行只读轮询宿主 `GET /dsh-devtunnel-ssh/channels`，渲染「活动托管通道 / 重试或阻塞 / 最近事件」清单，
-  并用 `POST /dsh-devtunnel-ssh/channels { action:'stop', machineId, confirmed:true }` 断开单条托管通道；
-  宿主侧未启用 managed（`getManagedStarter` 缺失）时显示提示而不是隐藏整个 box。
+* occupant 职责：渲染 **Dev Tunnel 整卡**——
+  1. 全局设置表单（CLI 路径覆盖 / 托管授权 / 常驻模式-Tunnel ID-远端端口 / 保存 / 刷新 / 版本预检 / 登录预检），
+     `tunnel` 未就绪（路由缺失或形状不符）时整节禁用而非隐藏，手工刷新恒可用；
+  2. 自行只读轮询宿主 `GET /dsh-devtunnel-ssh/channels`，渲染常驻状态行（**整卡只在此处展示一次**）、
+     「活动托管通道 / 重试或阻塞 / 最近事件」清单，并用
+     `POST /dsh-devtunnel-ssh/channels { action:'stop', machineId, confirmed:true }` 断开单条托管通道；
+  3. 宿主侧未启用 managed（`getManagedStarter` 缺失）时显示提示而不是隐藏整个 box。
 
 ### 宿主只读/受控接口（本插件自有路由，不属于 slot 契约）
 
@@ -110,10 +162,11 @@ dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings
 ## 视觉
 
 occupant 复用 owner 注入的 `.rws-btn`（激活态加 ` on`）与 `.rws-input` 类名获得一致外观；
-布局用内联样式、不使用 owner 的私有主题常量，颜色只用 `opacity`/继承以免耦合主题。
+panel 使用 `.dvt-panel` 命名空间下的 CSS，避免污染 owner 或其他槽位；不使用 owner 私有主题常量。颜色继承 currentColor，通过透明度区分层级，窄容器自动换行。通道列表置于顶部，全局设置折叠，未配置时默认展开。
 
-## 不在本次范围
+## 版本历史
 
-dsh-remote 页面顶部的「全局 Dev Tunnel 设置（宿主）」卡片（CLI 路径 / 托管授权 / 预检）仍由
-dsh-remote 渲染并直接调用本插件宿主路由 `/dsh-devtunnel-ssh/settings`、`/dsh-devtunnel-ssh/preflight`；
-它是宿主设置，不是机器表单的一部分，如需同样注入属后续独立变更。
+* **v3（2026-10-11）**：全局设置卡迁入 panel 槽位整卡（见文首）；dsh-remote 移除
+  `tunnelCard`/`residentStatusLine` 渲染，页面顶部不再有第二张 Dev Tunnel 卡；常驻状态只在整卡
+  展示一次。渲染层 i18n（`tunnel*` keys）迁移到本插件字典，hook 层 keys 留在 dsh-remote。
+* v1/v2：option + fields 注入（v1）；panel 通道管理 box（v2）。
