@@ -13,7 +13,7 @@ v3（2026-10-11）：`settings.remote.machine.transport.panel` 的 owner props �
 
 本节取代下文旧版 resident 与按 machineId 停止通道的行为。通道配置独立持久化在
 `devtunnel-channels.json`，由本插件拥有；channelId 与 SSH machineId 无关。
-`GET /channels` 返回所有已保存通道（包括 stopped/error），`catalogRevision` 用于写入乐观锁。
+`GET /channels` 返回所有已保存通道（包括 stopped/recovering/error），`catalogRevision` 用于写入乐观锁。
 `POST /channels` 接受 `{action, channelId, revision, confirmed:true, channel?}`：
 `create/update` 带严格通道配置 `{name,mode,tunnelId,remotePort,endpoint?}`，create 的 channelId 为
 空串，由宿主生成；`start/stop/restart/delete` 不带 channel。mode 为 managed/external；external
@@ -25,7 +25,23 @@ SSH connector 增加可选 channelId（兼容旧机器按 tunnelId+remotePort �
 目标描述与原 targetIdentity 算法，防止通道编辑重定向旧机器或破坏既有镜像身份。
 carrier acquire 仅借用已就绪通道，release 仅减少引用；停止/故障关闭该代 closed，旧 SSH
 连接随之失效。后台 Git/SSH 查询不能创建或重启进程。显式 start/restart 允许 supervisor
-在本次启动内有界重试；运行中断线显示 error，等待用户操作。清理失败阻止再次启动。
+在本次启动内有界重试；清理失败阻止再次启动，且永不自动恢复。
+
+### 有界自动恢复（2026-10-13）
+
+已显式启动并达到 ready 的 managed 通道，其 connect 进程意外退出（CONNECT_EXITED）时自动恢复而非
+停留在 error：状态先进入 `recovering`（列表错误码保留原退出原因），按 2s/8s/30s 退避最多自动重启
+3 次（每次重启内含 supervisor 的启动期有界重试预算）；任一代稳定运行满 5 分钟即重置该失败预算。
+预算耗尽后进入 `error`（错误码 `CONNECT_RETRY_EXHAUSTED`）等待用户操作；显式 start/restart 开启
+全新恢复周期。用户 stop/restart/delete、设置变更 stopAll、清理失败（CONNECT_CLEANUP_FAILED）均
+立即取消待执行的自动重启，停止的通道永不被自动拉起。
+
+宿主进程整机睡眠/合屏/断电恢复后，devtunnel 客户端即使进程存活也常与中继失去连接。插件以纯 Node
+心跳（30s，Date.now 墙钟差值）检测 ≥5 分钟的事件循环挂起间隙，对恢复时仍处于 ready 的 managed
+通道各执行一次有界重启（重置恢复预算，新 generation），解决挂死隧道；stopped/error/starting 通道
+与 external 条目不受影响。catalog-less 嵌入下 carrier 还会经 `wakeRecover` 失效仍存活的 managed
+on-demand 代，使下次 acquire 建立新隧道。检测是启发式（正向墙钟跳变同样触发），无宿主 power API
+依赖；重启通道会让借用它的旧 SSH 连接失效，但绝不重放 SSH 业务。
 
 panel 继续由插件渲染，去除 singleton resident 表单，增加独立通道增删改查与启停。
 全局设置/preflight 仍经 owner tunnel hook；通道目录 CRUD/启停使用本插件已有受控 channels
@@ -170,3 +186,34 @@ panel 使用 `.dvt-panel` 命名空间下的 CSS，避免污染 owner 或其他�
   `tunnelCard`/`residentStatusLine` 渲染，页面顶部不再有第二张 Dev Tunnel 卡；常驻状态只在整卡
   展示一次。渲染层 i18n（`tunnel*` keys）迁移到本插件字典，hook 层 keys 留在 dsh-remote。
 * v1/v2：option + fields 注入（v1）；panel 通道管理 box（v2）。
+
+## 会话头 Dev Tunnel 状态标记（2026-10-13，dsh 本体会话壳）
+
+面向 dsh 本体的会话界面，不是 dsh-remote 槽位。本插件浏览器半侧占用 ui-conversation 声明的
+`conversation.session.header.utilities`（list，session 作用域，id=`devtunnel-status`，order=-100），
+仅对 Dev Tunnel 工作区在会话头右侧（utilities 区，open-in-app 等原生控件旁）渲染一枚状态标记：
+已连接/连接中/恢复中（自动重启）/
+连接失败（含错误码）/未启动/外部监听/通道缺失，点悬停显示通道名、Tunnel ID、远端端口与实际
+loopback 端点。非 devtunnel 工作区渲染空（不占位）；本条目 order=-100，在 utilities 区内排在
+open-in-app（-10）、editor-workbench（9）等按钮左侧。声明缺失时 `slots.inject` 静默跳过，不影响原有会话头。
+
+### 工作区连接摘要 v1（SSH 与 Dev Tunnel 特化）
+
+优先读取 `GET /dsh-remote/status?sessionId=…&cwd=…` 的 `connection`：
+`schemaVersion:1, scope:'workspace', binding:'local'|'bound'|'unavailable'`；仅 bound 摘要包含
+稳定 machineId、protocol、path（direct/carrier）、carrierKind、mode、carrierTarget 与
+`ssh.state`（connected/disconnected/unknown）。Dev Tunnel 的 carrierTarget 只含 tunnelId、
+remotePort、可选 channelId。targetIdentity 沿用 canonical 身份，不使用临时 localhost 端点。
+该字段是只读 additive 展示契约，不迁移机器或镜像记录，不创建 pool、不拨号。
+
+本插件只处理 `protocol:'ssh', path:'carrier', carrierKind:'devtunnel'` 的 bound 工作区，
+然后读取自有 `/dsh-devtunnel-ssh/channels` 获得通道状态。隧道 ready 显示“隧道就绪”而非
+“SSH 已连接”；SSH 状态单独展示；external 显示“外部管理（未验证）”。已确认 Dev Tunnel
+身份而通道查询失败时仍显示“状态未知”，不隐藏；显式 channelId 缺失/目标变化不得匹配别的通道。
+
+旧版本没有 connection 字段时，明确兼容 `/dsh-remote/resolve-mirror?local=…` +
+`/dsh-remote/machines` 的稳定绑定与 connector.kind；绝不读取 Git 标记或全局当前机器猜身份。
+存在 connection 但 local/unavailable/不支持版本时不得走旧接口降级。轮询每 10s 一次，不重叠请求，
+切工作区立即隐藏旧 chip，卸载停止轮询；所有请求只读、同源认证，无设置写入。
+
+dsh 壳零改动；dsh-remote 仅新增统一只读摘要；Dev Tunnel 特化由本插件拥有。

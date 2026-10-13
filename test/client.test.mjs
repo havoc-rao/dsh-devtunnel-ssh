@@ -263,14 +263,17 @@ test('mirror creation stays gated on a saved, non-dirty draft with a path and a 
   assert.match(text(clean.render()), /\/local\/mirror\/mac-b/)
 })
 
-test('the only host routes this half touches are the read-only channel feed and its stop', () => {
+test('the only host routes this half touches are read-only feeds: its own channels and the session status chain', () => {
   const { module } = load()
   assert.deepEqual(Object.keys(module.dict.zh).sort(), Object.keys(module.dict.en).sort())
-  // Machine/save/probe/mirror routes belong to the owner, never to this half.
-  assert.doesNotMatch(source, /\/dsh-remote\//u)
+  // Machine/save/probe/mirror WRITE routes belong to the owner, never to this half.
+  // The session header marker additionally reads two public client-safe GET
+  // routes of dsh-remote (workspace→machine resolution) — never writes.
+  const remoteReads = [...source.matchAll(/'(\/dsh-remote\/[a-z-]+)'/gu)].map(match => match[1])
+  assert.deepEqual([...new Set(remoteReads)], ['/dsh-remote/status', '/dsh-remote/resolve-mirror', '/dsh-remote/machines'])
   const routes = [...source.matchAll(/'(\/dsh-devtunnel-ssh\/[a-z-]+)'/gu)].map(match => match[1])
   assert.deepEqual([...new Set(routes)], ['/dsh-devtunnel-ssh/channels'])
-  assert.doesNotMatch(source, /Authorization|Bearer|document\.cookie/u)
+  assert.doesNotMatch(source, /Authorization|Bearer|document\.cookie|POST.*dsh-remote|action.*dsh-remote/u)
 })
 
 const feed = {
@@ -592,4 +595,142 @@ test('saved machine start button uses the channels route only and prevents dupli
   assert.equal(requests.find(r => r.body).body.action, 'start')
   assert.ok(requests.every(r => r.url === '/dsh-devtunnel-ssh/channels'))
   assert.deepEqual(rig.calls.patch, [])
+})
+
+// ── session header Dev Tunnel status marker ───────────────────────────────
+
+test('session status resolves only devtunnel carrier workspaces to a bounded projection', () => {
+  const { module } = load()
+  assert.equal(module.resolveSessionDevTunnelStatus(null, [], []), null)
+  assert.equal(module.resolveSessionDevTunnelStatus({ id: 'm1', carrierKind: 'ssh' }, [], []), null)
+  assert.equal(module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' }, [], []), null)
+  assert.equal(module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' }, [{ id: 'm2', connector: { kind: 'devtunnel' } }], []), null)
+  assert.equal(module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' },
+    [{ id: 'm1', connector: { kind: 'ssh' } }], []), null)
+
+  const external = module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' },
+    [{ id: 'm1', connector: { kind: 'devtunnel', mode: 'external', tunnelId: 't.jpe1', remotePort: 22, endpoint: { host: '127.0.0.1', port: 51234 } } }], [])
+  assert.deepEqual(external, { tunnelId: 't.jpe1', remotePort: 22, state: 'external', code: null, name: null, endpoint: { host: '127.0.0.1', port: 51234 } })
+
+  const managed = module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' },
+    [{ id: 'm1', connector: { kind: 'devtunnel', mode: 'managed', tunnelId: 't.jpe1', remotePort: 22, channelId: 'c1' } }],
+    [{ channelId: 'c1', tunnelId: 't.jpe1', remotePort: 22, name: 'Mac', state: 'recovering', error: 'CONNECT_EXITED', endpoint: null }])
+  assert.deepEqual(managed, { tunnelId: 't.jpe1', remotePort: 22, state: 'recovering', code: 'CONNECT_EXITED', name: 'Mac', endpoint: null })
+
+  // Legacy machine without channelId matches the saved channel by target.
+  const legacy = module.resolveSessionDevTunnelStatus({ machineId: 'm2', mode: 'remote' },
+    [{ id: 'm2', connector: { kind: 'devtunnel', mode: 'managed', tunnelId: 't.jpe1', remotePort: 22 } }],
+    [{ channelId: 'c1', tunnelId: 't.jpe1', remotePort: 22, state: 'ready', endpoint: { host: '127.0.0.1', port: 50100 } }])
+  assert.equal(legacy.state, 'ready')
+  assert.deepEqual(legacy.endpoint, { host: '127.0.0.1', port: 50100 })
+
+  // Managed machine whose channel disappeared reads as missing, never guessed.
+  const missing = module.resolveSessionDevTunnelStatus({ machineId: 'm3', mode: 'remote' },
+    [{ id: 'm3', connector: { kind: 'devtunnel', mode: 'managed', tunnelId: 'gone.jpe1', remotePort: 22 } }], [])
+  assert.deepEqual(missing, { tunnelId: 'gone.jpe1', remotePort: 22, state: 'missing', code: 'CHANNEL_NOT_FOUND', name: null, endpoint: null })
+
+  // Malformed identity is refused loudly (no chip) instead of rendering garbage.
+  for (const connector of [
+    { kind: 'devtunnel', mode: 'managed', tunnelId: 'bad/id', remotePort: 22 },
+    { kind: 'devtunnel', mode: 'managed', tunnelId: 't.jpe1', remotePort: 0 },
+    { kind: 'devtunnel', mode: 'external', tunnelId: 't.jpe1', remotePort: 22, endpoint: { host: '10.0.0.1', port: 22 } },
+  ]) {
+    assert.equal(module.resolveSessionDevTunnelStatus({ machineId: 'm1', mode: 'remote' },
+      [{ id: 'm1', connector }], []), null, JSON.stringify(connector))
+  }
+})
+
+test('session status pull composes the three public read routes in order', async () => {
+  const { module } = load()
+  const calls = []
+  const call = async url => {
+    calls.push(url)
+    if (url.startsWith('/dsh-remote/resolve-mirror')) return { machineId: 'm1', mode: 'remote' }
+    if (url === '/dsh-remote/machines') return { machines: [{ id: 'm1', connector: { kind: 'devtunnel', mode: 'managed', tunnelId: 't.jpe1', remotePort: 22, channelId: 'c1' } }] }
+    if (url === '/dsh-devtunnel-ssh/channels') return { ok: true, channels: [{ channelId: 'c1', state: 'error', error: 'CONNECT_RETRY_EXHAUSTED' }] }
+    throw new Error('unexpected url ' + url)
+  }
+  const status = await module.pullSessionDevTunnelStatus('/mirror/ws', call)
+  assert.equal(status.state, 'error')
+  assert.equal(status.code, 'CONNECT_RETRY_EXHAUSTED')
+  assert.equal(calls[0], '/dsh-remote/status?cwd=' + encodeURIComponent('/mirror/ws'))
+  assert.equal(calls[1], '/dsh-remote/resolve-mirror?local=' + encodeURIComponent('/mirror/ws'))
+  // Non-devtunnel workspace stops the chain before any machines/channels read.
+  const calls2 = []
+  const none = await module.pullSessionDevTunnelStatus('/plain/ws', async url => {
+    calls2.push(url)
+    if (url.startsWith('/dsh-remote/resolve-mirror')) return { mode: 'local', machineId: '', fallback: true }
+    throw new Error('must not read further')
+  })
+  assert.equal(none, null)
+  assert.equal(calls2.length, 2, 'old host compatibility probes status then metadata only')
+  // A broken intermediate source yields null (chip hides), never throws.
+  const broken = await module.pullSessionDevTunnelStatus('/mirror/ws', async url => {
+    if (url.startsWith('/dsh-remote/resolve-mirror')) return { ok: true }
+    throw new Error('down')
+  })
+  assert.equal(broken, null)
+})
+
+test('the session header chip renders only for devtunnel workspaces and shows live state', async () => {
+  const requests = []
+  const urlFor = {
+    ['/dsh-remote/resolve-mirror?local=' + encodeURIComponent('/mirror/ws')]: { machineId: 'm1', mode: 'remote' },
+    '/dsh-remote/machines': { machines: [{ id: 'm1', connector: { kind: 'devtunnel', mode: 'managed', tunnelId: 't.jpe1', remotePort: 22, channelId: 'c1' } }] },
+    '/dsh-devtunnel-ssh/channels': { ok: true, channels: [{ channelId: 'c1', name: 'Mac', state: 'recovering', error: 'CONNECT_EXITED', endpoint: null }] },
+  }
+  const fetchImpl = async (url, options = {}) => {
+    requests.push(url)
+    const body = urlFor[url]
+    if (!body) return { ok: false, status: 404 }
+    return { ok: true, json: async () => body }
+  }
+  const { env, module } = load(fetchImpl)
+  const sessions = { byId: { s1: { cwd: '/mirror/ws' } } }
+  const render = () => { env.reset(); return module.SessionDevTunnelStatus({ sessionId: 's1', useSessions: selector => selector(sessions) }) }
+  let tree = render()
+  env.flush()
+  await settle()
+  await new Promise(resolve => setImmediate(resolve))
+  tree = render()
+  const chip = nodes(tree).find(node => node.props && node.props['data-testid'] === 'devtunnel-session-status')
+  assert.ok(chip, 'chip renders for a devtunnel workspace')
+  assert.match(text(chip), /sessionStatusRecovering/)
+  assert.doesNotMatch(text(chip), /SSH|sessionSsh/)
+  assert.equal(nodes(chip).some(node => Object.hasOwn(node.props || {}, 'data-devtunnel-ssh-state')), false)
+  assert.match(chip.props.title, /Mac · t\.jpe1:22 \(CONNECT_EXITED\)/)
+
+  // Non-devtunnel workspace: fresh mount, no chip, and the chain stops after
+  // the workspace read (no machines/channels fetch).
+  const plainPulls = []
+  const plain = load(async url => { plainPulls.push(url); return { ok: false, status: 404 } })
+  const plainSlots = { byId: { s1: { cwd: '/plain/ws' } } }
+  const plainRender = () => { plain.env.reset(); return plain.module.SessionDevTunnelStatus({ sessionId: 's1', useSessions: selector => selector(plainSlots) }) }
+  plainRender(); plain.env.flush(); await settle(); plain.env.reset()
+  assert.equal(plainRender(), null)
+  assert.deepEqual(plainPulls, ['/dsh-remote/status?cwd=' + encodeURIComponent('/plain/ws') + '&sessionId=s1',
+    '/dsh-remote/resolve-mirror?local=' + encodeURIComponent('/plain/ws')])
+})
+
+test('apply injects the session utilities entry once the conversation shell declares the seat', () => {
+  const { env, module } = load()
+  const slots = createSlots(env.React)
+  const services = { slots, locale: { register: () => () => {}, bind: () => key => 'T:' + key } }
+  const ctx = { get: name => services[name], effect: fn => fn(), inject: () => {}, on() {}, logger: { warn() {} } }
+  module.apply(ctx)
+  assert.equal(slots.registered.some(entry => entry.def.name === module.SLOT_SESSION_UTILITIES), false, 'waits for the declaration')
+  // The shell declares the header seat exactly as ui-conversation does.
+  slots.register({ name: 'root', children: { 'conversation.header': { kind: 'single', scope: 'session-maybe' } } }, () => null)
+  slots.register({ name: 'conversation.header', children: { 'conversation.session.header': { kind: 'single', scope: 'session' } } }, () => null)
+  slots.register({ name: 'conversation.session.header', children: { 'conversation.session.header.lineage': { kind: 'single', scope: 'session' }, [module.SLOT_SESSION_UTILITIES]: { kind: 'list', scope: 'session' } } }, () => null)
+  const entry = slots.registered.find(e => e.def.name === module.SLOT_SESSION_UTILITIES)
+  assert.ok(entry)
+  assert.equal(entry.def.id, 'devtunnel-status')
+  assert.equal(entry.def.order, -100)
+  assert.equal(typeof entry.component, 'function')
+  for (const [id, order] of [['open-in-app', -10], ['editor-workbench', 9], ['bottom-workbench', 10]]) {
+    slots.register({ name: module.SLOT_SESSION_UTILITIES, id, order }, () => null)
+  }
+  const ordered = [...slots.entries(module.SLOT_SESSION_UTILITIES)].sort((a, b) => (a.def.order || 0) - (b.def.order || 0))
+  assert.equal(ordered[0].def.id, 'devtunnel-status', 'status precedes existing header utility buttons')
 })

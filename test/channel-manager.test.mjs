@@ -7,6 +7,7 @@ import { createChannelStore } from '../lib/util/channel-store.js';
 import { createSettingsRuntime } from '../lib/core/settings-runtime.js';
 import { createCarrier, targetIdentity } from '../lib/core/carrier.js';
 const tick = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const config = { name: 'Mac', mode: 'managed', tunnelId: 'fixture.jpe1', remotePort: 22 };
 function settingsStore(extra = {}) {
   let value = { settings: { cliExecutable: '/fixture/devtunnel', managedEnabled: true, residentTunnelId: '', residentRemotePort: 0, residentMode: 'off', ...extra }, revision: 0, source: 'config' };
@@ -21,6 +22,7 @@ async function fixture(t, options = {}) {
   const store = settingsStore(options.settings);
   const runtime = await createSettingsRuntime({ store, channelStore: createChannelStore({ directory }),
     resolveCli: async () => ({ status: 'found', source: 'override', resolvedExecutable: '/fixture/devtunnel' }),
+    channelRecovery: options.recovery || { exitDelaysMs: [1, 2, 5], stableResetMs: 60000, heartbeatMs: 20, resumeGapMs: 5000 },
     makeStarter: options.makeStarter || (() => async ({ signal }) => {
       let ended;
       const handle = { endpoint: { host: '127.0.0.1', port: 51000 + handles.length },
@@ -95,16 +97,138 @@ test('external entries are registered only and no process action is accepted', a
   await lease.release(); await f.command('delete', id);
   assert.deepEqual(f.events, []);
 });
-test('process exit invalidates all leases and stays failed without background reconnect', async t => {
+test('unexpected runtime exit auto-restarts with a bounded budget and invalidates old leases', async t => {
   const f = await fixture(t); const id = await f.command('create', '', config);
   await f.command('start', id); await tick();
   const lease = await f.carrier.acquire({ machineId: 'a', connector: f.connector(id) });
-  f.handles[0].end(); await tick(); await lease.closed;
-  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'error');
+  const firstPort = lease.dialPort;
+  f.handles[0].end(); await tick();
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'recovering');
+  await lease.closed;
   await assert.rejects(f.carrier.acquire({ machineId: 'a', connector: f.connector(id) }), /CHANNEL_NOT_READY/);
-  assert.equal(f.handles.length, 1);
+  await delay(10);
+  assert.equal(f.handles.length, 2, 'auto-restart spawned a fresh generation');
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
+  assert.notEqual(f.runtime.channelSnapshot().channels[0].endpoint.port, firstPort);
+  const next = await f.carrier.acquire({ machineId: 'a', connector: f.connector(id) });
+  assert.notEqual(next.generation, lease.generation);
+  await next.release(); await lease.release();
+});
+test('recovery budget exhausts into a manual error state and never restarts beyond it', async t => {
+  const f = await fixture(t); const id = await f.command('create', '', config);
+  await f.command('start', id); await tick();
+  // Three auto restarts are allowed; the fourth unexpected exit exhausts.
+  for (let exit = 0; exit < 4; exit++) {
+    f.handles[exit].end();
+    await delay(10);
+  }
+  const row = f.runtime.channelSnapshot().channels[0];
+  assert.equal(row.state, 'error');
+  assert.equal(row.error, 'CONNECT_RETRY_EXHAUSTED');
+  const count = f.handles.length;
+  assert.equal(count, 4, 'initial generation plus three auto restarts');
+  await delay(40);
+  assert.equal(f.handles.length, count, 'no restart after exhaustion');
+  // Explicit user restart starts a fresh epoch.
   await f.command('restart', id); await tick();
-  assert.equal(f.handles.length, 2); await lease.release();
+  assert.equal(f.handles.length, count + 1);
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
+});
+test('a generation that stays ready long enough resets the recovery epoch', async t => {
+  const f = await fixture(t, { recovery: { exitDelaysMs: [1], stableResetMs: 25, heartbeatMs: 20, resumeGapMs: 5000 } });
+  const id = await f.command('create', '', config);
+  await f.command('start', id); await tick(); // gen1
+  f.handles[0].end(); await delay(10);          // recovery 1 → gen2
+  assert.equal(f.handles.length, 2);
+  await delay(40);                              // gen2 stays ready beyond stableResetMs
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
+  const before = f.handles.length;
+  f.handles[1].end(); await delay(10);          // stable exit resets budget → recovery again
+  assert.equal(f.handles.length, before + 1, 'stable lifetime reset the failure budget');
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
+});
+test('deliberate stop cancels a pending auto-restart and restart keeps one fresh generation', async t => {
+  const f = await fixture(t); const id = await f.command('create', '', config);
+  await f.command('start', id); await tick();
+  f.handles[0].end(); await tick();
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'recovering');
+  await f.command('stop', id);
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'stopped');
+  await delay(20);
+  assert.equal(f.handles.length, 1, 'stopped channel never restarts');
+  await f.command('start', id); await tick();
+  f.handles[1].end(); await tick();
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'recovering');
+  await f.command('restart', id); await tick();
+  assert.equal(f.handles.length, 3, 'explicit restart wins over the pending recovery');
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
+});
+test('delete drops the pending recovery and the record, and poison never auto-restarts', async t => {
+  const f = await fixture(t); const id = await f.command('create', '', config);
+  await f.command('start', id); await tick();
+  f.handles[0].end(); await tick();
+  await f.command('delete', id);
+  await delay(20);
+  assert.equal(f.handles.length, 1, 'deleting a recovering channel spawns nothing');
+});
+test('wake recovery also invalidates on-demand managed generations so the next acquire is fresh', async t => {
+  let clock = 1000;
+  const f = await fixture(t, { recovery: { exitDelaysMs: [1], stableResetMs: 60000, heartbeatMs: 5, resumeGapMs: 20, now: () => clock } });
+  // Catalog-less embedding: a carrier owned by our own runtime, started by the
+  // supervised starter so wakeRecover has real on-demand generations to drop.
+  const carrier = createCarrier({ startManaged: f.runtime.getStarter(), capabilities: f.runtime.capabilities,
+    onCarrier: f.runtime.attachCarrier });
+  t.after(() => carrier.dispose());
+  const connector = { kind: 'devtunnel', mode: 'managed', tunnelId: 'on-demand.jpe1', remotePort: 22 };
+  const lease = await carrier.acquire({ machineId: 'od-a', connector });
+  const firstPort = lease.dialPort;
+  assert.equal(f.handles.length, 1);
+  clock += 20;
+  await delay(25);                       // sleep gap ends: watchdog → wakeRecover
+  await lease.closed;
+  assert.throws(() => lease.dialPort, /STALE_LEASE/);
+  await delay(40);                       // steady state: no second invalidation
+  assert.equal(f.handles.length, 1, 'on-demand channel is torn down, not restarted');
+  const next = await carrier.acquire({ machineId: 'od-a', connector });
+  assert.notEqual(next.generation, lease.generation);
+  assert.notEqual(next.dialPort, firstPort);
+  await next.release(); await lease.release();
+});
+test('cleanup-failure poison blocks auto-restart after an unexpected exit', async t => {
+  let starts = 0, current;
+  const f = await fixture(t, { makeStarter: () => async () => {
+    starts++; let ended;
+    const handle = { endpoint: { host: '127.0.0.1', port: 5000 }, closed: new Promise(r => { ended = r; }),
+      end: () => ended({ reason: 'CONNECT_EXITED' }),
+      close: async () => { throw Error('private raw failure'); } };
+    current = handle; return handle;
+  } });
+  const id = await f.command('create', '', config); await f.command('start', id); await tick();
+  current.end(); await tick();
+  await delay(20);
+  assert.equal(starts, 1, 'poisoned cleanup never triggers another start');
+  assert.equal(f.runtime.channelSnapshot().channels[0].error, 'CONNECT_CLEANUP_FAILED');
+});
+test('sleep watchdog restarts READY managed channels once per wake, never stopped or external ones', async t => {
+  let clock = 1000;
+  const f = await fixture(t, { recovery: { exitDelaysMs: [1], stableResetMs: 60000, heartbeatMs: 5, resumeGapMs: 20, now: () => clock } });
+  const managed = await f.command('create', '', config);
+  const external = await f.command('create', '', { ...config, name: 'Ext', tunnelId: 'external.jpe1', mode: 'external', endpoint: { host: '127.0.0.1', port: 54321 } });
+  const stopped = await f.command('create', '', { ...config, name: 'Stopped', tunnelId: 'stopped.jpe1' });
+  await f.command('start', managed); await tick();
+  const lease = await f.carrier.acquire({ machineId: 'a', connector: f.connector(managed) });
+  const oldGeneration = lease.generation;
+  clock += 20; // jump ≥ resumeGapMs: a long suspend ends here
+  await delay(25);
+  assert.equal(f.handles.length, 2, 'ready managed channel restarted once on resume');
+  await lease.closed;
+  const rows = Object.fromEntries(f.runtime.channelSnapshot().channels.map(c => [c.name, c.state]));
+  assert.deepEqual(rows, { Mac: 'ready', Ext: 'external', Stopped: 'stopped' });
+  assert.notEqual(f.runtime.channelSnapshot().channels[0].generation, oldGeneration);
+  const again = f.handles.length;
+  await delay(40); // steady heartbeats must not fire a second resume
+  assert.equal(f.handles.length, again);
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'ready');
 });
 test('stop during startup aborts and waits for late handle cleanup; no leaked process', async t => {
   let resolveStart, signal, closed = 0;
