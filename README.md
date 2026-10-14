@@ -1,5 +1,9 @@
 # dsh-devtunnel-ssh — 独立实验插件包
 
+<img src="./icon.svg" width="72" height="72" alt="Dev Tunnel SSH logo" />
+
+插件图标为透明背景 SVG：蓝绿两端终端通过通道相连，表示经 Dev Tunnel 建立本地到远端的 SSH 连接。通过 `package.json` 顶层 `icon` 声明，并随包分发，无需构建。
+
 本插件独立管理 `devtunnel connect` 通道；`dsh-remote` 管理 SSH 认证、连接池、终端、文件和 Git。通道与 SSH 机器分别保存，使用公开 `dsh-remote/lib/ssh-carrier.js` 注册路径交接端点和失效通知，不复制 SSH 引擎。
 
 ## 使用
