@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "main": "lib/index.js",
-  "exports": { ".": "./lib/index.js", "./client": "./lib/client/client.js" },
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client/client.js", "./package.json": "./package.json" },
   "icon": "./icon.svg",
   "files": ["lib", "cordis.patch.yml", "README.md", "MANUAL.md", "icon.svg"],
   "dependencies": { "@deepseek-ai/schemastery": "^3.18.2" },
