@@ -208,12 +208,22 @@ remotePort、可选 channelId。targetIdentity 沿用 canonical 身份，不使�
 
 本插件只处理 `protocol:'ssh', path:'carrier', carrierKind:'devtunnel'` 的 bound 工作区，
 然后读取自有 `/dsh-devtunnel-ssh/channels` 获得通道状态。隧道 ready 显示“隧道就绪”而非
-“SSH 已连接”；SSH 状态单独展示；external 显示“外部管理（未验证）”。已确认 Dev Tunnel
+“SSH 已连接”；tag 只展示 Dev Tunnel 状态，不追加 SSH 状态文案；external 显示“外部管理（未验证）”。已确认 Dev Tunnel
 身份而通道查询失败时仍显示“状态未知”，不隐藏；显式 channelId 缺失/目标变化不得匹配别的通道。
 
 旧版本没有 connection 字段时，明确兼容 `/dsh-remote/resolve-mirror?local=…` +
 `/dsh-remote/machines` 的稳定绑定与 connector.kind；绝不读取 Git 标记或全局当前机器猜身份。
 存在 connection 但 local/unavailable/不支持版本时不得走旧接口降级。轮询每 10s 一次，不重叠请求，
-切工作区立即隐藏旧 chip，卸载停止轮询；所有请求只读、同源认证，无设置写入。
+切工作区立即隐藏旧 chip，卸载停止轮询；自动状态查询只读、同源认证，无设置写入。
+
+### tag 点击悬浮操作
+
+状态 tag 为 button，点击展开 dsh ui-primitives 的 Menu（portal，支持点击外部/Esc/键盘关闭），
+列出当前通道信息与启动/重启/停止/刷新。操作复用已认证 `/channels` 接口与设置页的确认提示；
+每次动作重新读取工作区身份和 catalogRevision，严格校验 channelId/tunnelId/remotePort/mode。
+已停止才可启动，ready/starting/recovering 时启动禁用，stopping/缺失/未知或未授权时写操作禁用。
+external 仅展示与刷新，绝不控制外部进程；不会自动创建通道，不修改机器绑定或全局设置。
+同组件并发操作互斥，POST 失败不重试；确认后切工作区则拒绝旧动作。操作完成刷新当前 tag。
+停止/重启影响所有共享该通道的 SSH 会话，确认提示保留此警告，不重放 SSH 业务。
 
 dsh 壳零改动；dsh-remote 仅新增统一只读摘要；Dev Tunnel 特化由本插件拥有。
