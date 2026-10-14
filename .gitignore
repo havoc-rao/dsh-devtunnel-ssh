@@ -7,6 +7,10 @@ node_modules/
 # npm pack output (this plugin has no build step)
 /dsh-devtunnel-ssh-*.tgz
 
+# Standalone CLI build artifacts
+/apps/cli/dist/
+/apps/cli/dist-*/
+
 # Test coverage
 coverage/
 .nyc_output/

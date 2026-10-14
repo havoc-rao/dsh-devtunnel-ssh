@@ -1,0 +1,157 @@
+name: dsh-link native release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a GitHub release (explicit opt-in; otherwise artifacts only)
+        type: boolean
+        default: false
+      release_tag:
+        description: Required for publishing; must equal dsh-link-v<CLI package version>
+        type: string
+        default: ''
+  push:
+    tags:
+      - 'dsh-link-v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dsh-link-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            platform: darwin
+            arch: arm64
+            asset: macos-arm64
+          - runner: macos-15-intel
+            platform: darwin
+            arch: x64
+            asset: macos-x64
+          - runner: windows-2022
+            platform: win32
+            arch: x64
+            asset: windows-x64
+    runs-on: ${{ matrix.runner }}
+    env:
+      EXPECTED_PLATFORM: ${{ matrix.platform }}
+      EXPECTED_ARCH: ${{ matrix.arch }}
+      ASSET_TARGET: ${{ matrix.asset }}
+      EVENT_NAME: ${{ github.event_name }}
+      REF_TYPE: ${{ github.ref_type }}
+      REF_NAME: ${{ github.ref_name }}
+      PUBLISH: ${{ inputs.publish }}
+      REQUESTED_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate native target and release version
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('apps/cli/package.json', 'utf8'));
+          if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid CLI version');
+          if (process.platform !== process.env.EXPECTED_PLATFORM || process.arch !== process.env.EXPECTED_ARCH) throw new Error('Runner is not the required native target');
+          const tag = `dsh-link-v${version}`;
+          if (process.env.EVENT_NAME === 'push' && (process.env.REF_TYPE !== 'tag' || process.env.REF_NAME !== tag)) throw new Error(`Release tag must equal ${tag}`);
+          if (process.env.EVENT_NAME === 'workflow_dispatch' && process.env.PUBLISH === 'true' && process.env.REQUESTED_TAG !== tag) throw new Error(`Explicit publish requires release_tag=${tag}`);
+          NODE
+      - name: Test standalone CLI before build
+        shell: bash
+        run: node --test apps/cli/test/*.test.mjs
+      - name: Provision declared build dependencies explicitly
+        working-directory: apps/cli
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts --no-audit --no-fund --include=dev
+          else
+            npm install --ignore-scripts --no-audit --no-fund --include=dev
+          fi
+      - name: Build native Node SEA executable
+        shell: bash
+        run: node apps/cli/scripts/build.mjs --out apps/cli/dist
+      - name: Smoke-test native executable before packaging
+        shell: bash
+        run: |
+          if [ "$EXPECTED_PLATFORM" = win32 ]; then exe=apps/cli/dist/dsh-link.exe; else exe=apps/cli/dist/dsh-link; fi
+          node apps/cli/scripts/smoke.mjs "$exe"
+      - name: Package macOS executable
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          version="$(node -p "JSON.parse(require('node:fs').readFileSync('apps/cli/package.json','utf8')).version")"
+          mkdir -p release-assets
+          tar -czf "release-assets/dsh-link-${version}-${ASSET_TARGET}.tar.gz" -C apps/cli/dist dsh-link
+      - name: Package Windows executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = (Get-Content apps/cli/package.json -Raw | ConvertFrom-Json).version
+          New-Item -ItemType Directory -Path release-assets -Force | Out-Null
+          Compress-Archive -Path apps/cli/dist/dsh-link.exe -DestinationPath "release-assets/dsh-link-$version-$env:ASSET_TARGET.zip"
+      - name: Calculate archive SHA-256
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+          const archives = readdirSync('release-assets').filter(name => /\.(tar\.gz|zip)$/.test(name));
+          if (archives.length !== 1) throw new Error('Expected one native archive');
+          for (const name of archives) writeFileSync(`release-assets/${name}.sha256`, `${createHash('sha256').update(readFileSync(`release-assets/${name}`)).digest('hex')}  ${name}\n`);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsh-link-${{ matrix.asset }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      EVENT_NAME: ${{ github.event_name }}
+      REF_NAME: ${{ github.ref_name }}
+      REQUESTED_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dsh-link-*
+          path: release-assets
+          merge-multiple: true
+      - name: Upload explicitly triggered release
+        shell: bash
+        run: |
+          if [ "$EVENT_NAME" = push ]; then tag="$REF_NAME"; else tag="$REQUESTED_TAG"; fi
+          # A dispatch may publish only an existing tag at this exact checkout.
+          # Do not silently create tags or publish branch builds under another commit.
+          git fetch --no-tags origin "refs/tags/$tag:refs/tags/$tag"
+          test "$(git rev-parse "$tag^{commit}")" = "$GITHUB_SHA"
+          # Checksum files contain archive basenames, not workspace-relative paths.
+          (cd release-assets && sha256sum --check *.sha256)
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --verify-tag --title "dsh-link ${tag#dsh-link-v}" --notes-file apps/cli/RELEASE.md
+          fi
+          gh release upload "$tag" release-assets/*
