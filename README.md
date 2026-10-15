@@ -35,6 +35,8 @@ UI 经 `ctx.slots.inject` 注入 RemoteSettings，不注册独立 settings page�
 
 Dev Tunnel 工作区（会话头）：经现有 `conversation.session.header.utilities` 注入状态 chip，dsh 壳零改动。优先消费 dsh-remote `/status?sessionId=…&cwd=…` 的 `connection` v1：底层 protocol=ssh、路径 path=carrier、carrierKind=devtunnel 与直连 SSH 明确区分。再读取自有 `/channels`，显示隧道就绪/恢复中/停止/失败，与 SSH connected/disconnected/unknown 分开；external 仅标记外部管理（未验证）。旧版无 connection 时兼容 resolve-mirror + machines 的稳定绑定，绝不依赖 Git 标记或全局当前机器。每 10s 不重叠轮询，卸载即停；换工作区立即隐藏旧 chip。查询不拨号、不重启、不写设置。
 
+New Chat blank/hero（hideChrome）不渲染会话头：另经 `shell.overlay` 注册常驻 fallback（宿主提供 `sidebarRight.mounted` 时），把同一入口以 28px compact 形态 portal 到 `document.body`（fixed、zIndex 40），按右侧栏原生按钮（`data-sidebar-right-expand`/`data-sidebar-right-toggle`）左移找安全空位，命中测试避让一切不透明小控件，避开 `data-dsh-dock-fallback`/`data-dsh-bottom-toggle`/`data-dsew-resume-fallback`/`data-dsh-editor-workbench="resume"`。会话头入口真实存在时让位，无安全空位、无挂在屏会话或不属 Dev Tunnel 工作区时不显示（不虚构状态、不拦截点击）；订阅与观察者卸载即清。
+
 当前仍为实验包，`productionReady=false`。源码测试不代表个人 Tunnel、实际 GUI 或产品部署验收。包设为 private，未提供自动安装脚本。开发组合测试的兄弟仓 source imports 不是公开 API；低层 adapter 单测不代表生产运行会由 SSH 启动 connect。
 
 运行 `node --test test/*.test.mjs`；打包使用 `npm pack --ignore-scripts`。完整说明见 [MANUAL.md](MANUAL.md)。

@@ -708,7 +708,7 @@ test('the session header chip renders only for devtunnel workspaces and shows li
   chip.props.ref.current = { getBoundingClientRect: () => tagRect }
   assert.equal(opened.props.getAnchorRect(), tagRect, 'portal anchors to button instead of wrapper layout')
   assert.equal(chip.props.className, 'dvt-session-tag')
-  assert.match(source, /\.dvt-session-tag:hover/)
+  assert.match(source, /\.dvt-session-tag:not\(\.dvt-session-tag-static\):hover/)
   assert.match(source, /\.dvt-session-tag:focus-visible/)
   assert.ok(opened.props.items.filter(item => !item.type).every(item => item.icon))
   assert.deepEqual(opened.props.items.filter(item => !item.type).map(item => item.id), ['start', 'restart', 'stop', 'refresh'])

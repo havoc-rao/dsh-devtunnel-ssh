@@ -107,16 +107,24 @@ export function createSlots(React) {
 }
 
 /** Load one classic client bundle and return its exported module. */
-export function loadClient(source, { React, windowOverrides = {}, fetchImpl } = {}) {
+export function loadClient(source, { React, windowOverrides = {}, documentOverrides = {}, fetchImpl } = {}) {
   let exports
   const window = {
     location: { protocol: 'https:' },
     confirm: () => true,
     localStorage: { getItem: () => null },
+    MutationObserver: class { constructor() {} observe() {} disconnect() {} },
+    addEventListener() {}, removeEventListener() {},
     ...windowOverrides,
-    __ModuleLoader__: { load: definition => { exports = definition.factory(name => { if (name === '@deepseek-ai/dsh-client-ui-primitives') return { Switch: 'HostSwitch', Menu: 'HostMenu' }; if (name !== 'react') throw new Error('unexpected require: ' + name); return React }) } },
+    __ModuleLoader__: { load: definition => { exports = definition.factory(name => { if (name === '@deepseek-ai/dsh-client-ui-primitives') return { Switch: 'HostSwitch', Menu: 'HostMenu' }; if (name === 'react-dom') return { createPortal: node => node }; if (name !== 'react') throw new Error('unexpected require: ' + name); return React }) } },
   }
-  const document = { getElementById: () => null, createElement: () => ({ style: {}, set textContent(v) {}, appendChild() {} }), head: { appendChild() {} } }
+  const document = {
+    getElementById: () => null,
+    createElement: () => ({ style: {}, set textContent(v) {}, appendChild() {} }),
+    head: { appendChild() {} },
+    body: null,
+    ...documentOverrides,
+  }
   const fetch = fetchImpl || (() => { throw new Error('this client half must not fetch') })
   // Timers are capped to the next macrotask and never repeat: a client half that
   // races a fetch against a fallback timeout must settle, and no interval may

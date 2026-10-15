@@ -1,4 +1,4 @@
-# RemoteSettings 机器表单槽位契约 v5（dsh-remote ↔ dsh-devtunnel-ssh）
+# RemoteSettings 机器表单槽位契约 v6（dsh-remote ↔ dsh-devtunnel-ssh）
 
 用户指令：dsh-remote 统一 RemoteSettings 里的「类型」与 Dev Tunnel 通道模式/字段必须由本插件注入，
 dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings.section`，也不再渲染整页表单。
@@ -8,6 +8,28 @@ v3（2026-10-11）：`settings.remote.machine.transport.panel` 的 owner props �
 迁入该 box**。occupant 渲染整卡（全局设置 + 常驻 + 通道管理），owner 不再渲染设置卡、不重复
 展示常驻状态。渲染层 i18n 文案随迁移进入本插件字典；hook 内 confirm/错误/消息翻译与全部写操作
 仍由 owner 状态机完成。
+
+## v6 机器 item 状态与显式操作（2026-10-15）
+
+新增三个 list/root 槽位，各自由渲染它的 entry 声明，禁止借用其他 entry 的 renderSlot：
+- `settings.remote.machine.status`：设置页机器行。
+- `remote.picker.hero.machine.status`：hero 目录选择器。
+- `remote.picker.sidebar.machine.status`：侧栏目录选择器（包括替换侧栏的 directoryFlow）。
+
+owner props 为 `{ machine, busy, interactive?, onOpenChange? }`，machine 为已保存的脱敏快照，不是草稿。
+occupant 仅为 connector.kind=devtunnel 的机器渲染状态 chip；选择器下拉行与选中机器旁均可显示。
+选择器下拉行传 `interactive: false`：仅渲染非聚焦的状态 tag，无按钮、下拉箭头或菜单交互。
+选中机器右侧传 `interactive: true`：保留状态操作菜单；设置页未传时维持原有交互。
+chip 是机器选择按钮的兄弟，不嵌套按钮；交互不会选择机器、浏览目录或连接 SSH。
+`onOpenChange(boolean)` 允许 owner 在 portal 菜单展开时暂缓关闭外层下拉；卸载归还 false。
+无 occupant 时不留占位。未经 slot 注册的旧内嵌选择器保持原样。
+
+Dev Tunnel 复用会话头的状态与操作菜单，状态只表示隧道，不代表 SSH 已连接。
+只读轮询共用短时缓存与在途请求，失败显示未知而非沿用就绪；卸载不再轮询。
+每次写操作重新读取机器注册表并核验 connector 身份，再读取最新 catalogRevision；
+确认后仍检查当前 item 身份。只允许已有且目标一致的 managed 通道显式启动/重启/停止，
+缺失、目标改变、未知、stopping、未授权与 external 禁用写入；不自动创建通道，失败不重试。
+启动不重放 SSH 操作，停止/重启警告影响共享通道的全部 SSH 连接。
 
 ## v5 独立通道列表（2026-10-11）
 
