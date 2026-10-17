@@ -65,6 +65,47 @@ test('catalog persists without spawning; SSH cannot start or restart and release
   assert.equal(reloaded.settings.channels[0].channelId, id);
   assert.equal(Object.hasOwn(reloaded.settings.channels[0], 'generation'), false);
 });
+test('passive status polling never starts stopped channels, borrows leases or arms wake recovery', async t => {
+  let clock = 1000;
+  const f = await fixture(t, { recovery: { exitDelaysMs: [1], stableResetMs: 60000, heartbeatMs: 5, resumeGapMs: 20, now: () => clock } });
+  const id = await f.command('create', '', config);
+  for (let i = 0; i < 10; i++) {
+    assert.equal((await f.runtime.snapshot({ refresh: false })).activeManaged, 0);
+    const row = f.runtime.channelSnapshot().channels[0];
+    assert.equal(row.state, 'stopped');
+    assert.equal(row.refs, 0);
+    assert.equal(row.generation, null);
+    assert.deepEqual(f.carrier.snapshot(), []);
+  }
+  clock += 20;
+  await delay(25);
+  assert.deepEqual(f.events, [], 'polling and a wake heartbeat cannot create demand');
+  assert.equal(f.runtime.channelSnapshot().channels[0].state, 'stopped');
+  await assert.rejects(f.carrier.acquire({ machineId: 'idle', connector: f.connector(id) }), /CHANNEL_NOT_READY/);
+  assert.deepEqual(f.events, [], 'even a mistaken acquire cannot auto-start a catalog channel');
+});
+test('passive reads and releasing an idle workspace preserve another workspace shared channel lease', async t => {
+  const f = await fixture(t);
+  const id = await f.command('create', '', config);
+  await f.command('start', id); await tick();
+  const idle = await f.carrier.acquire({ machineId: 'idle', connector: f.connector(id) });
+  const active = await f.carrier.acquire({ machineId: 'active', connector: f.connector(id) });
+  const generation = active.generation, port = active.dialPort;
+  await idle.release();
+  for (let i = 0; i < 10; i++) {
+    await f.runtime.snapshot({ refresh: false });
+    const row = f.runtime.channelSnapshot().channels[0];
+    assert.equal(row.refs, 1, 'observations cannot retain or release another workspace lease');
+    assert.equal(row.generation, generation);
+    assert.equal(row.state, 'ready');
+    assert.deepEqual(f.carrier.snapshot(), []);
+  }
+  assert.equal(active.dialPort, port);
+  assert.deepEqual(f.events, ['spawn'], 'no restart or stop while another workspace is using the channel');
+  await active.release();
+  assert.equal(f.runtime.channelSnapshot().channels[0].refs, 0);
+  assert.deepEqual(f.events, ['spawn'], 'explicit independent-channel intent survives final SSH release');
+});
 test('legacy managed machines match a saved target; edits cannot redirect trusted machines', async t => {
   const f = await fixture(t);
   const id = await f.command('create', '', config);
