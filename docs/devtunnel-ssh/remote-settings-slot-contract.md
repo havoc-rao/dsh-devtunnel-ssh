@@ -24,6 +24,11 @@ chip 是机器选择按钮的兄弟，不嵌套按钮；交互不会选择机器
 `onOpenChange(boolean)` 允许 owner 在 portal 菜单展开时暂缓关闭外层下拉；卸载归还 false。
 无 occupant 时不留占位。未经 slot 注册的旧内嵌选择器保持原样。
 
+选择器弹窗遵循宿主 ui-primitives 的标准层级：modal overlay 为 `z-index: 1000`，
+状态操作菜单使用 `Menu portal:true`（标准 portal 层级 `1100`），以逃逸卡片滚动/裁剪容器并显示在弹窗之上。
+owner 不得把选择器 overlay 提升到菜单之上（例如 `9999`）；occupant 不通过私有 CSS 硬抬菜单层级。
+此约束同样适用于选择器内的本地目录浏览弹窗；菜单开关仍经 `onOpenChange` 回报 owner。
+
 Dev Tunnel 复用会话头的状态与操作菜单，状态只表示隧道，不代表 SSH 已连接。
 只读轮询共用短时缓存与在途请求，失败显示未知而非沿用就绪；卸载不再轮询。
 每次写操作重新读取机器注册表并核验 connector 身份，再读取最新 catalogRevision；
