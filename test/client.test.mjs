@@ -9,9 +9,9 @@ const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.
 const CAPABLE = { sshCarrierCapabilities: { workspaceSupported: true, carrierIds: ['devtunnel'] } }
 const MANAGED = { sshCarrierCapabilities: { workspaceSupported: true, carrierIds: ['devtunnel'], devTunnelManaged: true } }
 
-function load(fetchImpl) {
+function load(fetchImpl, timerOptions = {}) {
   const env = createReact()
-  const loaded = loadClient(source, { React: env.React, ...(fetchImpl ? { fetchImpl } : {}) })
+  const loaded = loadClient(source, { React: env.React, ...timerOptions, ...(fetchImpl ? { fetchImpl } : {}) })
   return { env, module: loaded.exports, window: loaded.window }
 }
 
@@ -156,13 +156,14 @@ test('the type option renders its own button and hint, and honours locked/busy/u
 })
 
 /** Renders the fields occupant with an owner double and returns the handles. */
-function fieldsRig({ form = {}, status = CAPABLE, locked = false, busy = false, scopeDir = '/local/ws', dirty = true, mirrorPath = '', localMirror = '', fetchImpl } = {}) {
-  const { env, module } = load(fetchImpl)
+function fieldsRig({ form = {}, status = CAPABLE, locked = false, busy = false, scopeDir = '/local/ws', dirty = true, mirrorPath = '', localMirror = '', fetchImpl, retarget, timerOptions } = {}) {
+  const { env, module } = load(fetchImpl, timerOptions)
   const calls = { patch: [], checked: [], publish: [], mirror: 0, mirrorPath: [] }
   const state = { ...form }
   let mirror = mirrorPath
   let local = localMirror
   const carrier = {
+    retarget,
     publish: draft => calls.publish.push(draft),
     get saved() { return '' },
     get dirty() { return dirty },
@@ -729,6 +730,114 @@ test('the session header chip renders only for devtunnel workspaces and shows li
   assert.equal(plainRender(), null)
   assert.deepEqual(plainPulls, ['/dsh-remote/status?cwd=' + encodeURIComponent('/plain/ws') + '&sessionId=s1',
     '/dsh-remote/resolve-mirror?local=' + encodeURIComponent('/plain/ws')])
+})
+
+const replacementChannel = { channelId: 'new-channel', name: 'New tunnel', mode: 'managed', tunnelId: 'new.jpe1', remotePort: 22, state: 'stopped' }
+const channelSelect = rig => nodes(rig.tree).find(n => n.props?.key === 'channel').children[1].children[0]
+const selectEvent = value => ({ target: { value } })
+const channelResponse = channels => ({ ok: true, json: async () => ({ ok: true, catalogRevision: 1, channels }) })
+
+test('one selector lists all saved targets including stopped and refreshes after adding without starting', async () => {
+  let channels = [quickChannel], reads = 0
+  const timers = []
+  const rig = fieldsRig({ form: { ...savedQuickForm, channelId: quickChannel.channelId }, status: MANAGED,
+    locked: true, dirty: false, retarget: async () => false,
+    timerOptions: { setIntervalImpl: (fn, ms) => { timers.push({ fn, ms }); return 0 } },
+    fetchImpl: async () => { reads++; return channelResponse(channels) } })
+  await settle(); rig.render()
+  assert.equal(nodes(rig.tree).filter(n => n.type === 'select').length, 1)
+  assert.equal(findButton(rig.tree, 'channelRetarget'), undefined)
+  channels = [...channels, replacementChannel]
+  assert.equal(timers[0].ms, 3000)
+  timers[0].fn(); await settle(); rig.render()
+  const select = channelSelect(rig)
+  assert.match(text(select), /new.jpe1:22 · stopped/)
+  assert.equal(nodes(select).filter(n => n.type === 'option' && n.props.value).length, 2)
+  const before = reads
+  select.props.onFocus(); await settle()
+  assert.ok(reads > before, 'opening/focusing refreshes the catalog')
+  assert.equal(rig.calls.patch.length, 0)
+})
+
+test('saved retarget restores native value, never patches/publishes target and waits for owner hydrate', async () => {
+  for (const outcome of ['cancel', 'failure', 'success']) {
+    let resolve
+    const pending = new Promise(r => { resolve = r })
+    const calls = []
+    const rig = fieldsRig({ form: { ...savedQuickForm, channelId: 'old-channel' }, status: MANAGED,
+      locked: true, dirty: false, retarget: async c => { calls.push(c); await pending; if (outcome === 'failure') throw Error('CAS'); return outcome === 'success' },
+      fetchImpl: async () => channelResponse([replacementChannel]) })
+    await settle(); rig.render()
+    const before = rig.calls.publish.length
+    const select = channelSelect(rig), event = selectEvent('new-channel')
+    const result = select.props.onChange(event)
+    assert.equal(event.target.value, 'old-channel', 'native DOM immediately returns to controlled selection')
+    await select.props.onChange(selectEvent('new-channel'))
+    rig.render()
+    assert.equal(channelSelect(rig).props.disabled, true)
+    assert.equal(calls.length, 1, 'in-flight duplicate ignored')
+    assert.deepEqual(calls[0], { kind: 'devtunnel', mode: 'managed', channelId: 'new-channel', tunnelId: 'new.jpe1', remotePort: 22 })
+    resolve(); await result; rig.render()
+    assert.equal(channelSelect(rig).props.value, 'old-channel', outcome)
+    assert.equal(rig.calls.patch.length, 0)
+    assert.equal(rig.calls.publish.length, before)
+    if (outcome === 'success') {
+      Object.assign(rig.state, { channelId: 'new-channel', tunnelId: 'new.jpe1' }) // owner hydrate
+      rig.render()
+      assert.equal(channelSelect(rig).props.value, 'new-channel')
+    }
+  }
+})
+
+test('old owner, busy, dirty, capability and failed-feed gates reject cross-target handler calls', async () => {
+  for (const gate of ['old-owner', 'busy', 'dirty', 'managed-unavailable', 'feed-error']) {
+    const calls = []
+    let failed = false
+    const rig = fieldsRig({ form: { ...savedQuickForm, channelId: 'old-channel' }, locked: true,
+      dirty: gate === 'dirty', busy: gate === 'busy', status: gate === 'managed-unavailable' ? CAPABLE : MANAGED,
+      retarget: gate === 'old-owner' ? undefined : async c => { calls.push(c); return true },
+      fetchImpl: async () => failed ? { ok: false } : channelResponse([replacementChannel]) })
+    await settle(); rig.render()
+    if (gate === 'feed-error') {
+      await settle() // flush the hook double's preceding render-triggered pull
+      failed = true; channelSelect(rig).props.onFocus(); await settle(); rig.render()
+    }
+    const select = channelSelect(rig)
+    const option = nodes(select).find(n => n.type === 'option' && n.props.value === 'new-channel')
+    assert.ok(option, 'even blocked targets remain visible')
+    assert.equal(Boolean(select.props.disabled || option.props.disabled), true, gate)
+    await select.props.onChange(selectEvent('new-channel'))
+    assert.equal(calls.length, 0, gate)
+    assert.equal(rig.calls.patch.length, 0, gate)
+  }
+})
+
+test('new drafts patch selection, same canonical saved target uses ordinary save, external retarget keeps endpoint', async () => {
+  for (const locked of [false, true]) {
+    const calls = []
+    const channel = { ...replacementChannel, mode: 'external', tunnelId: 'fixture.jpe1', remotePort: 22,
+      endpoint: { host: '127.0.0.1', port: 5522 } }
+    const rig = fieldsRig({ form: { ...savedQuickForm, ...(locked ? { tunnelId: ' fixture.jpe1 ', remotePort: '022' } : { id: '' }) },
+      locked, dirty: false, status: MANAGED, retarget: async c => { calls.push(c); return true },
+      fetchImpl: async () => channelResponse([channel]) })
+    await settle(); rig.render()
+    await channelSelect(rig).props.onChange(selectEvent('new-channel'))
+    assert.equal(calls.length, 0)
+    assert.equal(rig.calls.patch.at(-1).carrierMode, 'external')
+    assert.equal(rig.calls.patch.at(-1).localPort, '5522')
+    assert.equal(rig.state.tunnelId, 'fixture.jpe1')
+  }
+  const calls = []
+  const channel = { ...replacementChannel, mode: 'external', endpoint: { host: '::1', port: 5522 } }
+  const rig = fieldsRig({ form: savedQuickForm, locked: true, dirty: false, status: CAPABLE,
+    retarget: async c => { calls.push(c); return true }, fetchImpl: async () => channelResponse([channel]) })
+  await settle(); rig.render()
+  await channelSelect(rig).props.onChange(selectEvent('new-channel'))
+  assert.deepEqual(calls[0].endpoint, channel.endpoint)
+  assert.equal(rig.calls.patch.length, 0)
+  await channelSelect(rig).props.onChange(selectEvent(''))
+  await channelSelect(rig).props.onChange(selectEvent('vanished-channel'))
+  assert.equal(rig.calls.patch.length, 0, 'missing/stale selections do not clear a saved connector')
 })
 
 test('apply injects the session utilities entry once the conversation shell declares the seat', () => {

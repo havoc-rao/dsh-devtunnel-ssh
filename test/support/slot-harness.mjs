@@ -107,7 +107,7 @@ export function createSlots(React) {
 }
 
 /** Load one classic client bundle and return its exported module. */
-export function loadClient(source, { React, windowOverrides = {}, documentOverrides = {}, fetchImpl } = {}) {
+export function loadClient(source, { React, windowOverrides = {}, documentOverrides = {}, fetchImpl, setIntervalImpl = () => 0, clearIntervalImpl = () => {} } = {}) {
   let exports
   const window = {
     location: { protocol: 'https:' },
@@ -134,7 +134,7 @@ export function loadClient(source, { React, windowOverrides = {}, documentOverri
   const clearTimeoutImpl = handle => { timers.delete(handle); globalThis.clearTimeout(handle) }
   // eslint-disable-next-line no-new-func
   new Function('window', 'document', 'navigator', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'console', 'fetch', source)(
-    window, document, { languages: ['zh-CN'] }, setTimeoutImpl, clearTimeoutImpl, () => 0, () => {}, console, fetch,
+    window, document, { languages: ['zh-CN'] }, setTimeoutImpl, clearTimeoutImpl, setIntervalImpl, clearIntervalImpl, console, fetch,
   )
   return { exports, window, disposeTimers() { for (const handle of timers) globalThis.clearTimeout(handle); timers.clear() } }
 }

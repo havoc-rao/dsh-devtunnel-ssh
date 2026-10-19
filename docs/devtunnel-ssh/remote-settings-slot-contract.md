@@ -1,4 +1,4 @@
-# RemoteSettings 机器表单槽位契约 v6（dsh-remote ↔ dsh-devtunnel-ssh）
+# RemoteSettings 机器表单槽位契约 v7（dsh-remote ↔ dsh-devtunnel-ssh）
 
 用户指令：dsh-remote 统一 RemoteSettings 里的「类型」与 Dev Tunnel 通道模式/字段必须由本插件注入，
 dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings.section`，也不再渲染整页表单。
@@ -8,6 +8,16 @@ v3（2026-10-11）：`settings.remote.machine.transport.panel` 的 owner props �
 迁入该 box**。occupant 渲染整卡（全局设置 + 常驻 + 通道管理），owner 不再渲染设置卡、不重复
 展示常驻状态。渲染层 i18n 文案随迁移进入本插件字典；hook 内 confirm/错误/消息翻译与全部写操作
 仍由 owner 状态机完成。
+
+## v7 已保存机器显式更换通道（2026-10-19）
+
+fields 的 `carrier` 新增可选 `retarget(connector): Promise<boolean>` 回调：owner 仅在用户确认、CAS 提交并重新 hydrate 成功后返回 `true`；取消、门控拒绝或失败返回 `false`，由 owner 展示错误。occupant 也捕获意外 rejection，不重试。
+
+occupant 只提供一个“选择通道”下拉，显示实时完整 channels list（包括 stopped/error/recovering，不按当前目标过滤）。`useChannelFeed(false)` 挂载时读取、每 3 秒刷新，聚焦/打开时另行刷新；下方添加通道后，列表在下一次成功轮询时更新，不要求先启动。
+
+新机器选择通道继续 `patch` 普通 draft。已保存（locked）机器选择不同 canonical Tunnel ID（trim）/远端端口（Number）时，只调用 `carrier.retarget(connector)`，绝不 patch/publish 新目标，不乐观更新选中值；立即恢复受控的当前值，取消/失败保持原选择，成功只跟随 owner hydrate。无回调的旧 owner 仍显示全部选项，但跨目标选项禁用且 handler 拒绝，绝不降级普通 patch。同目标 channelId/模式/endpoint 变更仍经普通 patch + 显式保存契约；Tunnel ID、远端端口与指纹仍锁定。busy、正在切换/启动、已保存草稿 dirty 或 feed 不可用时禁用下拉；按 carrier/managed 能力禁用不可选选项。不得另设“更换通道”下拉或按钮。
+
+owner 负责确认（显示原/新目标、共享该机器的全部 workspace 受影响、断开旧 SSH、同一远端与原指纹要求），然后调用既有 machines 路由的 `action:'retarget-carrier'`，携带 `id, connector, expectedConnector, expectedHostFingerprint, confirmed:true`。不提交其他机器草稿，不自动启动通道、不探测、不重放 SSH。服务器保留原指纹与其他机器配置，原 workspace/镜像目录必须继续解析到新目标；普通 update 仍拒绝改目标。迁移失败不得把旧镜像解析到未提交的新目标。保存完成后重新加载已保存机器，作废旧探测反馈。
 
 ## v6 机器 item 状态与显式操作（2026-10-15）
 
@@ -127,6 +137,7 @@ channelId 或旧机器的 Tunnel ID/远端端口匹配。无 channelId 且不存
       —— occupant 每次字段变化后发布；owner 必须**幂等**（canonical 相同不得 setState，避免渲染环）
     * `saved: string` 已保存连接体的 canonical JSON；新机器为 `''`
     * `dirty: boolean` `canonical(published.body) !== saved`
+    * `retarget?(connector): Promise<boolean>`（v7）：跨目标显式确认/CAS/重新 hydrate；成功 `true`，取消/门控/失败 `false`；occupant 不改普通 draft（详见 v7）。
     * `mirrorPath: string`、`setMirrorPath(v)`、`localMirror: string`、`createMirror(): void`
 * 注册项
   * dsh-remote：`{ name, key: 'ssh' }`
