@@ -1,4 +1,4 @@
-# dsh-link 0.1.0（实验版）
+# dsh-remote-devtunnel-link（dsh-rdl）0.1.0（实验版）
 
 独立 CLI 位于本插件仓库，但不修改现有插件运行时或 DSH 注册表。当前落地的是**安全配对文件 + 公钥授权计划/应用 + 无密码验证 + 手动 DSH 配置交接**，不是完整的一键安装服务。
 
@@ -15,6 +15,10 @@
 - 隧道支持保存稳定目标和显式前台 host/connect；默认仅输出计划，启动需 --apply。既有隧道及 SSH 端口/私有 ACL 仍需用户在官方 CLI 配置。无自动 DSH 导入、撤销、守护进程、自更新。
 - NOT RUN：真实 Windows 授权应用、真实双机隧道/SSH/SFTP、GitHub Release、正式签名/公证。
 
+## 安装到本机 PATH
+
+见 [跨平台安装文档](../../docs/cli-install.md)：GitHub Actions 构建产物、Release 安装脚本、用户级 PATH、升级和卸载。Release 附件实际发布后才可使用下载命令；安装不需要 Node，也不自动配置 SSH/Dev Tunnel。
+
 ## 开发运行
 
 需要 Node.js 22+ 和系统 OpenSSH（ssh、sftp、ssh-keygen）。
@@ -27,7 +31,11 @@ node apps/cli/src/main.mjs doctor
 node --test apps/cli/test/*.test.mjs
 ```
 
-以下用 `dsh-link` 表示已下载的可执行文件；源码运行时替换为上面的 Node 命令。
+正式名称与包名为 `dsh-remote-devtunnel-link`，短命令及独立可执行文件名为 `dsh-rdl`（Windows 为 `dsh-rdl.exe`）。源码包同时提供全名与短名命令。
+
+为兼容已有配对，本地状态目录仍为 `~/.dsh-link`，邀请/响应/验证记录的 v1 kind 与 `.dshlink` 文件后缀保持不变，不自动迁移密钥或配对记录。
+
+以下用 `dsh-rdl` 表示已下载的可执行文件；源码运行时替换为上面的 Node 命令。
 
 ## Windows 作为被连接端，Mac 作为控制端
 
@@ -40,18 +48,18 @@ OpenSSH Server 必须已运行、账号可登录。用官方 Dev Tunnel CLI 创�
 准备好既有持久隧道后，可保存目标并通过 CLI 显式启动（默认仅查看计划）：
 
 ```sh
-dsh-link tunnel save --tunnel YOUR-ID.usw3 --port 22 --out tunnel-target.json
-dsh-link tunnel host --target tunnel-target.json
-dsh-link tunnel host --target tunnel-target.json --apply
+dsh-rdl tunnel save --tunnel YOUR-ID.usw3 --port 22 --out tunnel-target.json
+dsh-rdl tunnel host --target tunnel-target.json
+dsh-rdl tunnel host --target tunnel-target.json --apply
 ```
 
-发送目标文件给控制端后，控制端可用 `dsh-link tunnel connect --target tunnel-target.json --apply` 代替手动 connect。进程保持前台、透传官方 CLI 输出；Ctrl-C 停止自身子进程，不控制其他用户进程。它不创建端口、不核实 ACL，也不会自动恢复或登录。
+发送目标文件给控制端后，控制端可用 `dsh-rdl tunnel connect --target tunnel-target.json --apply` 代替手动 connect。进程保持前台、透传官方 CLI 输出；Ctrl-C 停止自身子进程，不控制其他用户进程。它不创建端口、不核实 ACL，也不会自动恢复或登录。
 
 Windows 管理员 PowerShell：
 
 ```powershell
-dsh-link doctor
-dsh-link host invite --name Windows-HAVOC --username havoc --tunnel YOUR-ID.usw3 --port 22 --host-key C:\ProgramData\ssh\ssh_host_ed25519_key.pub --out host-invite.dshlink
+dsh-rdl doctor
+dsh-rdl host invite --name Windows-HAVOC --username havoc --tunnel YOUR-ID.usw3 --port 22 --host-key C:\ProgramData\ssh\ssh_host_ed25519_key.pub --out host-invite.dshlink
 ```
 
 CLI 不联网核实隧道，因此 Tunnel ID/端口必须与实际 host 一致。用可信传输方式把邀请发给 Mac；不要发送主机私钥。
@@ -59,7 +67,7 @@ CLI 不联网核实隧道，因此 Tunnel ID/端口必须与实际 host 一致�
 ### 2. 控制端生成响应
 
 ```sh
-dsh-link pair --invite host-invite.dshlink --out client-response.dshlink
+dsh-rdl pair --invite host-invite.dshlink --out client-response.dshlink
 ```
 
 输出专用配对校验码。私钥由系统 ssh-keygen 写入本机 `~/.dsh-link/keys/<clientId>/id_ed25519`；只发送响应文件，不发送该目录或私钥。
@@ -67,13 +75,13 @@ dsh-link pair --invite host-invite.dshlink --out client-response.dshlink
 ### 3. 被连接端先看计划，再核对并应用
 
 ```powershell
-dsh-link host accept --invite host-invite.dshlink --response client-response.dshlink
+dsh-rdl host accept --invite host-invite.dshlink --response client-response.dshlink
 ```
 
 它显示校验码和实际脚本。**通过电话或其他可信渠道，与 Mac 上的校验码逐字符核对**。一致后才能执行：
 
 ```powershell
-dsh-link host accept --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --apply
+dsh-rdl host accept --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --apply
 ```
 
 失败时不重复用该邀请：保留报错，新建邀请并检查原因。CLI 不自动重启 sshd，公钥文件通常按连接重新读取。
@@ -89,7 +97,7 @@ devtunnel connect YOUR-ID.usw3
 查看 **远端 SSH 端口 22 对应的当前本机端口**。另一个终端，例如本机端口为 58339：
 
 ```sh
-dsh-link verify --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --local-port 58339
+dsh-rdl verify --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --local-port 58339
 ```
 
 调用系统 SSH/SFTP：专用密钥、固定主机公钥、关闭 agent 和密码回退、关闭用户 SSH 配置，先验证 echo 再 SFTP pwd。不会传输/写远端文件。私钥内容不进入 CLI 或日志。
@@ -97,7 +105,7 @@ dsh-link verify --invite host-invite.dshlink --response client-response.dshlink 
 ### 5. 导出 DSH 手动接入说明
 
 ```sh
-dsh-link dsh export --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --out windows-handoff.json
+dsh-rdl dsh export --invite host-invite.dshlink --response client-response.dshlink --confirm XXXX-XXXX-XXXX-XXXX-XXXX-XXXX --out windows-handoff.json
 ```
 
 这是**交接文档**，不是内部注册表；禁止拿它覆盖 DSH 配置。RemoteSettings 中：

@@ -43,3 +43,10 @@ No plugin/profile deployment, GUI replacement, Git commit/tag/push, real SSH con
 - Full isolated fake-process verification tests for ssh/SFTP arguments and failures, then real dual-PC acceptance.
 - Authenticated DSH import remains a separate versioned public-interface task; no internal JSON writes.
 - Real native CI builds and release distribution qualification, followed by explicit publication authorization.
+
+## Naming update — 2026-10-19
+
+- Product/package: `dsh-remote-devtunnel-link`; short command and SEA executable: `dsh-rdl` (`dsh-rdl.exe` on Windows). Source package exposes both command names.
+- Release tag/archive prefix: `dsh-remote-devtunnel-link`.
+- Existing `.dsh-link` state directory, v1 pairing kinds and `.dshlink` extension remain unchanged for compatibility; no key migration or authorization changes.
+- Earlier build evidence above predates the rename; renamed native binaries and release distribution require fresh qualification.

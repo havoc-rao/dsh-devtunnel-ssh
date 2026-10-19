@@ -1,7 +1,7 @@
-# dsh-link standalone releases
+# dsh-remote-devtunnel-link (dsh-rdl) standalone releases
 
 The forthcoming standalone CLI starts at **0.1.0**. Its package version is the
-release source of truth; release tags must be exactly `dsh-link-v<version>`.
+release source of truth; release tags must be exactly `dsh-remote-devtunnel-link-v<version>`.
 It is a dependency-free Node CLI at runtime. The build tools are development
 dependencies, not runtime dependencies.
 
@@ -9,9 +9,9 @@ dependencies, not runtime dependencies.
 
 | Archive suffix | Native build runner | Executable |
 | --- | --- | --- |
-| `macos-arm64.tar.gz` | GitHub `macos-14`, Apple Silicon | `dsh-link` |
-| `macos-x64.tar.gz` | GitHub `macos-15-intel`, Intel | `dsh-link` |
-| `windows-x64.zip` | GitHub `windows-2022`, x64 | `dsh-link.exe` |
+| `macos-arm64.tar.gz` | GitHub `macos-14`, Apple Silicon | `dsh-rdl` |
+| `macos-x64.tar.gz` | GitHub `macos-15-intel`, Intel | `dsh-rdl` |
+| `windows-x64.zip` | GitHub `windows-2022`, x64 | `dsh-rdl.exe` |
 
 Each archive contains one self-contained **Node 22 SEA** executable and has a
 sibling `.sha256` checksum file. End users do not need Node, npm, esbuild, or
@@ -41,7 +41,7 @@ block downloaded executables or require a user-approved exception.
 
 Windows builds do not apply an Authenticode publisher signature. Injection
 changes the original Node executable, so its original signature must not be
-regarded as a valid publisher signature for dsh-link. Windows/SmartScreen or
+regarded as a valid publisher signature for dsh-rdl. Windows/SmartScreen or
 enterprise policies may warn or block execution. Do not disable security policy
 as an automatic installation step.
 
@@ -68,7 +68,7 @@ node apps/cli/scripts/build.mjs --out ./release-output
 ```
 
 The default output directory is `apps/cli/dist`; `--out` is resolved from the
-caller's current directory. The script writes `dsh-link` or `dsh-link.exe`,
+caller's current directory. The script writes `dsh-rdl` or `dsh-rdl.exe`,
 rejects nonempty output directories, symlinks, source directories, and project
 ancestors, and never clears an existing output directory. Choose a new empty
 directory for repeat builds. Temporary SEA files are removed after the build.
@@ -84,9 +84,11 @@ using the local postject API. It does not ship the build dependencies.
 
 ## Release workflow and explicit publication
 
-The GitHub workflow has only two triggers:
+The GitHub workflow has three triggers:
 
-- Push a tag exactly matching the CLI package version, e.g. `dsh-link-v0.1.0`.
+- Push to `main`: build and upload three native workflow artifacts; never publish a Release.
+
+- Push a tag exactly matching the CLI package version, e.g. `dsh-remote-devtunnel-link-v0.1.0`.
   After all three native builds pass, this explicitly triggered tag run uploads
   the archives and checksums to its GitHub release.
 - Run `workflow_dispatch`. By default this only builds downloadable workflow
@@ -94,8 +96,8 @@ The GitHub workflow has only two triggers:
   provide the exact version tag in `release_tag`. That tag must already exist
   and point at the exact dispatched commit. No tag is silently created.
 
-Ordinary branch pushes and pull requests do not trigger this release workflow
-or publish anything. A manually dispatched build on a version tag still needs
+Other branch pushes and pull requests do not trigger this workflow. A main push
+builds only; it does not publish. A manually dispatched build on a version tag still needs
 `publish: true` to publish. Build jobs have read-only repository permissions;
 only the explicitly gated publish job has `contents: write`. No package registry,
 OIDC permission, external signing service, or hidden installer is used.
@@ -113,12 +115,12 @@ For downloaded assets, verify from the directory containing both files:
 
 ```sh
 # macOS
-shasum -a 256 -c dsh-link-0.1.0-macos-arm64.tar.gz.sha256
+shasum -a 256 -c dsh-remote-devtunnel-link-0.1.0-macos-arm64.tar.gz.sha256
 ```
 
 ```powershell
 # Windows: compare this hash with the matching .sha256 text file.
-Get-FileHash .\dsh-link-0.1.0-windows-x64.zip -Algorithm SHA256
+Get-FileHash .\dsh-remote-devtunnel-link-0.1.0-windows-x64.zip -Algorithm SHA256
 ```
 
 Extract the correct archive for your CPU and invoke the extracted executable

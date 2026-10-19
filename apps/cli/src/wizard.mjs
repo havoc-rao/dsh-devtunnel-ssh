@@ -13,7 +13,7 @@ export async function wizard(args, { input = stdin, output = stdout } = {}) {
     return value || fallback;
   }
   try {
-    output.write('dsh-link 实验版配对向导\n不会自动安装服务、登录或开放匿名隧道。两端需用可信渠道交换文件并核对校验码。\n');
+    output.write('dsh-remote-devtunnel-link (dsh-rdl) 实验版配对向导\n不会自动安装服务、登录或开放匿名隧道。两端需用可信渠道交换文件并核对校验码。\n');
     if (args[0] === 'pair') {
       const invite = await ask('被连接端发来的邀请文件路径');
       const out = await ask('响应文件输出路径', 'client-response.dshlink');

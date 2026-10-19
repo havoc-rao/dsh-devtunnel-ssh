@@ -9,7 +9,7 @@ import { planWindowsAuthorize, planMacAuthorize, diagnosticCommands } from './pl
 import { wizard } from './wizard.mjs';
 import { tunnelTarget, tunnelCommand, foreground } from './tunnels.mjs';
 
-const HELP = `dsh-link ${VERSION} — experimental, no cloud pairing service
+const HELP = `dsh-remote-devtunnel-link (dsh-rdl) ${VERSION} — experimental, no cloud pairing service
 
   tunnel save --tunnel ID [--port 22] --out FILE   Save existing private tunnel target
   tunnel host --target FILE --apply               Explicit foreground host by saved ID
@@ -199,4 +199,4 @@ async function main() {
 // Statically imported fs keeps SEA/CJS bundling straightforward.
 import * as fs from 'node:fs';
 function requireFS() { return fs; }
-main().catch(error => { console.error(`dsh-link: ${error.message}`); process.exitCode = 1; });
+main().catch(error => { console.error(`dsh-rdl: ${error.message}`); process.exitCode = 1; });

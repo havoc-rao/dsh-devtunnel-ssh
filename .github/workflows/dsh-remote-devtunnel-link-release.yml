@@ -1,4 +1,4 @@
-name: dsh-link native release
+name: dsh-remote-devtunnel-link native release
 
 on:
   workflow_dispatch:
@@ -8,18 +8,19 @@ on:
         type: boolean
         default: false
       release_tag:
-        description: Required for publishing; must equal dsh-link-v<CLI package version>
+        description: Required for publishing; must equal dsh-remote-devtunnel-link-v<CLI package version>
         type: string
         default: ''
   push:
+    branches: [main]
     tags:
-      - 'dsh-link-v*'
+      - 'dsh-remote-devtunnel-link-v*'
 
 permissions:
   contents: read
 
 concurrency:
-  group: dsh-link-release-${{ github.ref }}
+  group: dsh-remote-devtunnel-link-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -65,8 +66,8 @@ jobs:
           const { version } = JSON.parse(readFileSync('apps/cli/package.json', 'utf8'));
           if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid CLI version');
           if (process.platform !== process.env.EXPECTED_PLATFORM || process.arch !== process.env.EXPECTED_ARCH) throw new Error('Runner is not the required native target');
-          const tag = `dsh-link-v${version}`;
-          if (process.env.EVENT_NAME === 'push' && (process.env.REF_TYPE !== 'tag' || process.env.REF_NAME !== tag)) throw new Error(`Release tag must equal ${tag}`);
+          const tag = `dsh-remote-devtunnel-link-v${version}`;
+          if (process.env.EVENT_NAME === 'push' && process.env.REF_TYPE === 'tag' && process.env.REF_NAME !== tag) throw new Error(`Release tag must equal ${tag}`);
           if (process.env.EVENT_NAME === 'workflow_dispatch' && process.env.PUBLISH === 'true' && process.env.REQUESTED_TAG !== tag) throw new Error(`Explicit publish requires release_tag=${tag}`);
           NODE
       - name: Test standalone CLI before build
@@ -87,7 +88,7 @@ jobs:
       - name: Smoke-test native executable before packaging
         shell: bash
         run: |
-          if [ "$EXPECTED_PLATFORM" = win32 ]; then exe=apps/cli/dist/dsh-link.exe; else exe=apps/cli/dist/dsh-link; fi
+          if [ "$EXPECTED_PLATFORM" = win32 ]; then exe=apps/cli/dist/dsh-rdl.exe; else exe=apps/cli/dist/dsh-rdl; fi
           node apps/cli/scripts/smoke.mjs "$exe"
       - name: Package macOS executable
         if: runner.os == 'macOS'
@@ -95,14 +96,14 @@ jobs:
         run: |
           version="$(node -p "JSON.parse(require('node:fs').readFileSync('apps/cli/package.json','utf8')).version")"
           mkdir -p release-assets
-          tar -czf "release-assets/dsh-link-${version}-${ASSET_TARGET}.tar.gz" -C apps/cli/dist dsh-link
+          tar -czf "release-assets/dsh-remote-devtunnel-link-${version}-${ASSET_TARGET}.tar.gz" -C apps/cli/dist dsh-rdl
       - name: Package Windows executable
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $version = (Get-Content apps/cli/package.json -Raw | ConvertFrom-Json).version
           New-Item -ItemType Directory -Path release-assets -Force | Out-Null
-          Compress-Archive -Path apps/cli/dist/dsh-link.exe -DestinationPath "release-assets/dsh-link-$version-$env:ASSET_TARGET.zip"
+          Compress-Archive -Path apps/cli/dist/dsh-rdl.exe -DestinationPath "release-assets/dsh-remote-devtunnel-link-$version-$env:ASSET_TARGET.zip"
       - name: Calculate archive SHA-256
         shell: bash
         run: |
@@ -115,14 +116,14 @@ jobs:
           NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: dsh-link-${{ matrix.asset }}
+          name: dsh-remote-devtunnel-link-${{ matrix.asset }}
           path: release-assets/*
           if-no-files-found: error
           retention-days: 14
 
   publish:
     needs: build
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
+    if: (github.event_name == 'push' && github.ref_type == 'tag') || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -138,9 +139,14 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
-          pattern: dsh-link-*
+          pattern: dsh-remote-devtunnel-link-*
           path: release-assets
           merge-multiple: true
+      - name: Include reviewed installers
+        shell: bash
+        run: |
+          cp apps/cli/install/install-macos.sh release-assets/
+          cp apps/cli/install/install-windows.ps1 release-assets/
       - name: Upload explicitly triggered release
         shell: bash
         run: |
@@ -152,6 +158,6 @@ jobs:
           # Checksum files contain archive basenames, not workspace-relative paths.
           (cd release-assets && sha256sum --check *.sha256)
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --verify-tag --title "dsh-link ${tag#dsh-link-v}" --notes-file apps/cli/RELEASE.md
+            gh release create "$tag" --verify-tag --title "dsh-remote-devtunnel-link ${tag#dsh-remote-devtunnel-link-v}" --notes-file apps/cli/RELEASE.md
           fi
           gh release upload "$tag" release-assets/*

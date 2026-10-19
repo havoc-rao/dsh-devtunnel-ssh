@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const cliRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const platform = process.platform;
-const executableName = platform === 'win32' ? 'dsh-link.exe' : 'dsh-link';
+const executableName = platform === 'win32' ? 'dsh-rdl.exe' : 'dsh-rdl';
 const help = 'Usage: node apps/cli/scripts/build.mjs [--out <empty-output-directory>]';
 const contains = (parent, child) => {
   const path = relative(parent, child);
@@ -90,7 +90,7 @@ async function main() {
     // The output was checked empty. Re-check before rename rather than replace any file.
     if ((await readdir(out)).some(name => name !== relative(out, scratch))) throw new Error('Output directory changed during build; refusing to overwrite.');
     await rename(candidate, output);
-    console.log(`Built dsh-link ${version} for ${platform}/${process.arch}: ${output}`);
+    console.log(`Built dsh-remote-devtunnel-link (dsh-rdl) ${version} for ${platform}/${process.arch}: ${output}`);
   } finally {
     // Only remove the exact temporary directory created above, after verifying its location.
     if (dirname(scratch) !== out || !relative(out, scratch).startsWith('.sea-') || await realpath(scratch) !== scratch) {

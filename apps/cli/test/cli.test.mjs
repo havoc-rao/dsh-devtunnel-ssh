@@ -10,6 +10,8 @@ const run = (args, home) => spawnSync(process.execPath,[main,...args],{encoding:
 test('CLI help/version and unknown options',()=>{
   assert.equal(run(['--version']).stdout.trim(),'0.1.0');
   assert.match(run(['--help']).stdout,/host invite/);
+  assert.match(run(['--help']).stdout,/dsh-remote-devtunnel-link \(dsh-rdl\)/);
+  assert.match(run(['unknown-command']).stderr,/^dsh-rdl:/);
   assert.equal(run(['pair','--wat','x']).status,1);
 });
 test('local invite and dedicated pair workflow produces no private key in response',(t)=>{
@@ -53,4 +55,14 @@ test('local invite and dedicated pair workflow produces no private key in respon
     assert.equal(failed.status,1);assert.match(failed.stderr,/ssh failed/);
     assert.throws(()=>readFileSync(join(dir,'.dsh-link','verified',r2.clientId+'.json')));
   }
+});
+
+test('CLI package exposes full and short names with matching lock metadata',()=>{
+  const pkg=JSON.parse(readFileSync(resolve('apps/cli/package.json'),'utf8'));
+  const lock=JSON.parse(readFileSync(resolve('apps/cli/package-lock.json'),'utf8'));
+  assert.equal(pkg.name,'dsh-remote-devtunnel-link');
+  assert.deepEqual(pkg.bin,{'dsh-remote-devtunnel-link':'src/main.mjs','dsh-rdl':'src/main.mjs'});
+  assert.equal(lock.name,pkg.name);
+  assert.equal(lock.packages[''].name,pkg.name);
+  assert.deepEqual(lock.packages[''].bin,pkg.bin);
 });

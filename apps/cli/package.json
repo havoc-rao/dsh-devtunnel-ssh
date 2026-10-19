@@ -1,10 +1,10 @@
 {
-  "name": "@dsh-experimental/dsh-link",
+  "name": "dsh-remote-devtunnel-link",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Explicit-consent SSH pairing and Dev Tunnel diagnostics for DSH",
-  "bin": { "dsh-link": "src/main.mjs" },
+  "bin": { "dsh-remote-devtunnel-link": "src/main.mjs", "dsh-rdl": "src/main.mjs" },
   "engines": { "node": ">=22" },
   "scripts": { "test": "node --test test/*.test.mjs", "build": "node scripts/build.mjs" },
   "devDependencies": { "esbuild": "0.25.12", "postject": "1.0.0-alpha.6" }

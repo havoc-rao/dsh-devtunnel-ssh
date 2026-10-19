@@ -1,4 +1,4 @@
-# dsh-link 0.1.0 双机与发布验收
+# dsh-remote-devtunnel-link（dsh-rdl）0.1.0 双机与发布验收
 
 代码/本机构建完成不代表实际 Windows 或 GitHub 下载验收完成。以下操作仅供用户明确授权后执行，不由工具默认自动运行。
 
@@ -32,7 +32,7 @@
 2. 三个平台构建、源码测试、PowerShell AST 检查（Windows）与可执行文件 smoke 成功。
 3. 从 artifact 下载正确架构包，在干净账户验证 SHA256 与启动；不要关闭系统安全策略。
 4. 当前 macOS 仅 ad hoc 签名，Windows 无发行者签名：不得宣称已正式签名或公证。
-5. 双机验收完成后，另行授权发布 dsh-link-v0.1.0；检查实际 Release assets 与 checksum。
+5. 双机验收完成后，另行授权发布 dsh-remote-devtunnel-link-v0.1.0；检查实际 Release assets 与 checksum。
 6. 正式下载链接必须由实际仓库和 Release 返回，代码阶段不编造链接。
 
 ## 生命周期限制
