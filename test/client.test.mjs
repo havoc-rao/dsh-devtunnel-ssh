@@ -156,14 +156,14 @@ test('the type option renders its own button and hint, and honours locked/busy/u
 })
 
 /** Renders the fields occupant with an owner double and returns the handles. */
-function fieldsRig({ form = {}, status = CAPABLE, locked = false, busy = false, scopeDir = '/local/ws', dirty = true, mirrorPath = '', localMirror = '', fetchImpl, retarget, timerOptions } = {}) {
+function fieldsRig({ form = {}, status = CAPABLE, locked = false, busy = false, scopeDir = '/local/ws', dirty = true, mirrorPath = '', localMirror = '', fetchImpl, retarget, bootstrapKey, timerOptions } = {}) {
   const { env, module } = load(fetchImpl, timerOptions)
   const calls = { patch: [], checked: [], publish: [], mirror: 0, mirrorPath: [] }
   const state = { ...form }
   let mirror = mirrorPath
   let local = localMirror
   const carrier = {
-    retarget,
+    retarget, bootstrapKey,
     publish: draft => calls.publish.push(draft),
     get saved() { return '' },
     get dirty() { return dirty },
@@ -861,4 +861,30 @@ test('apply injects the session utilities entry once the conversation shell decl
   }
   const ordered = [...slots.entries(module.SLOT_SESSION_UTILITIES)].sort((a, b) => (a.def.order || 0) - (b.def.order || 0))
   assert.equal(ordered[0].def.id, 'devtunnel-status', 'status precedes existing header utility buttons')
+})
+
+
+test('bootstrap keeps password out of draft, clears it before owner call and prevents replay', async () => {
+  let finish
+  const pending = new Promise(resolve => { finish = resolve })
+  const calls = []
+  const rig = fieldsRig({ form: { username: 'alice', tunnelId: 'mac.jpe1', remotePort: '22', localPort: '2222', expectedHostFingerprint: fingerprint },
+    bootstrapKey: async value => { calls.push(value); await pending; return true } })
+  rig.render()
+  const password = nodes(rig.tree).find(n => n.type === 'input' && n.props.type === 'password')
+  password.props.onChange({ target: { value: 'ephemeral-only' } }); rig.render()
+  const button = findButton(rig.tree, 'bootstrapKey')
+  assert.equal(button.props.disabled, false)
+  const first = button.props.onClick()
+  await button.props.onClick()
+  rig.render()
+  assert.equal(calls.length, 1)
+  assert.deepEqual(calls[0], { password: 'ephemeral-only' })
+  assert.equal(nodes(rig.tree).find(n => n.props?.type === 'password').props.value, '')
+  assert.equal(JSON.stringify(rig.calls).includes('ephemeral-only'), false)
+  finish(); await first
+  const oldOwner = fieldsRig()
+  assert.equal(findButton(oldOwner.tree, 'bootstrapKey'), undefined)
+  const locked = fieldsRig({ locked: true, bootstrapKey: async () => true })
+  assert.equal(findButton(locked.tree, 'bootstrapKey'), undefined)
 })

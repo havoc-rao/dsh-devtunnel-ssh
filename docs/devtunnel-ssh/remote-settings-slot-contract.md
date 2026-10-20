@@ -1,4 +1,4 @@
-# RemoteSettings 机器表单槽位契约 v7（dsh-remote ↔ dsh-devtunnel-ssh）
+# RemoteSettings 机器表单槽位契约 v8（dsh-remote ↔ dsh-devtunnel-ssh）
 
 用户指令：dsh-remote 统一 RemoteSettings 里的「类型」与 Dev Tunnel 通道模式/字段必须由本插件注入，
 dsh-remote 只提供 slot，各司其职。本插件不再注册独立 `settings.section`，也不再渲染整页表单。
@@ -8,6 +8,12 @@ v3（2026-10-11）：`settings.remote.machine.transport.panel` 的 owner props �
 迁入该 box**。occupant 渲染整卡（全局设置 + 常驻 + 通道管理），owner 不再渲染设置卡、不重复
 展示常驻状态。渲染层 i18n 文案随迁移进入本插件字典；hook 内 confirm/错误/消息翻译与全部写操作
 仍由 owner 状态机完成。
+
+## v8 Client 密码引导专用密钥（2026-10-19）
+
+fields.carrier 增加可选 `bootstrapKey({ password }): Promise<boolean>`。仅新建未保存机器可用；occupant 的密码只保留组件内存，不 patch/publish、不进入机器连接体。旧 owner 无回调时不展示入口。用户先独立核对主机指纹；owner 确认将为目标账号添加专用公钥且私钥未加口令、仅保存在运行 DSH 的 Client 用户私有目录，然后调用既有 `/dsh-remote/machines` 的 `action:'bootstrap-key'`。本操作仅临时密码认证，不保存密码、不启用 agent、不启动隧道、不安装 CLI/服务；通道须先就绪。首轮仅支持 macOS Host。
+
+引导允许无 privateKeyPath/useAgent 的结构有效草稿，故 owner 读取原始 published body（不得放宽普通保存/测试的 valid 门控）。服务端拒绝已保存 id/缺失 confirmed/无指纹/额外私钥或 agent 输入，强制 native pinned-host pool。通过已有密码会话安装公钥，不重放安装；新独立连接禁止密码/agent回退，用真实 native SSH/SFTP 验证。成功仅返回私钥路径与验证摘要；owner 回填 privateKeyPath、关闭 agent、清空密码与 passphrase，再由用户点击既有保存动作。保存失败不删除密钥或远端授权。安装已尝试后的失败标识 remoteMayBeAuthorized，提示保留的本机路径、不要盲目重试；不泄露密码/私钥/远端原始 stderr。owner 对重复点击互斥，编辑切换后的旧响应不回填。
 
 ## v7 已保存机器显式更换通道（2026-10-19）
 
@@ -38,6 +44,8 @@ chip 是机器选择按钮的兄弟，不嵌套按钮；交互不会选择机器
 状态操作菜单使用 `Menu portal:true`（标准 portal 层级 `1100`），以逃逸卡片滚动/裁剪容器并显示在弹窗之上。
 owner 不得把选择器 overlay 提升到菜单之上（例如 `9999`）；occupant 不通过私有 CSS 硬抬菜单层级。
 此约束同样适用于选择器内的本地目录浏览弹窗；菜单开关仍经 `onOpenChange` 回报 owner。
+回归验证须检查 hero/sidebar 两个 directoryFlow 的实际 DirPicker 渲染树，以及嵌套本地浏览弹窗：
+每个 `drp-ovl` 均为 `1000`，不能只验证 occupant 已传 `portal:true`（后者无法防止 owner 用 `9999` 遮挡菜单）。
 
 Dev Tunnel 复用会话头的状态与操作菜单，状态只表示隧道，不代表 SSH 已连接。
 只读轮询共用短时缓存与在途请求，失败显示未知而非沿用就绪；卸载不再轮询。
