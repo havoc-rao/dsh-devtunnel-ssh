@@ -224,7 +224,9 @@ channelId 或旧机器的 Tunnel ID/远端端口匹配。无 channelId 且不存
 ## 视觉
 
 occupant 复用 owner 注入的 `.rws-btn`（激活态加 ` on`）与 `.rws-input` 类名获得一致外观；
-panel 使用 `.dvt-panel` 命名空间下的 CSS，避免污染 owner 或其他槽位；不使用 owner 私有主题常量。颜色继承 currentColor，通过透明度区分层级，窄容器自动换行。通道列表置于顶部，全局设置折叠，未配置时默认展开。
+panel 使用 `.dvt-panel` 命名空间下的 CSS，避免污染 owner 或其他槽位；不使用 owner 私有主题常量。普通内容颜色继承 currentColor，通过透明度区分层级，窄容器自动换行。通道列表置于顶部，全局设置折叠，未配置时默认展开。
+
+通道状态圆点与机器行/会话头复用同一颜色映射：ready 绿色，starting/recovering/stopping 黄色，error 红色，stopped/未知灰色；external 蓝色（仅表示外部管理，不代表已验证就绪）。保留状态文字，不仅依赖颜色传递信息，彩色圆点不降低透明度。「已授权托管」只表示权限，保持中性色，不冒充运行状态。此项仅调整 occupant 展示，不改变 owner props、状态机或启停行为。
 
 ## 版本历史
 

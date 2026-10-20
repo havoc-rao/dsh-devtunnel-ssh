@@ -58,6 +58,12 @@ const mountedStore = initial => {
   }
 }
 
+test('all status entries share the icon-only geometry and bottom-right status badge', () => {
+  assert.match(source, /\.dvt-session-tag\{[^}]*position:relative[^}]*width:28px;height:28px/)
+  assert.match(source, /\.dvt-session-tag>\.dvt-status-dot\{position:absolute;right:3px;bottom:3px/)
+  assert.doesNotMatch(source, /\.dvt-session-tag-compact\{/)
+})
+
 // ── position measurement ──────────────────────────────────────────────────
 
 test('fallback position: header entry presence wins over the phase (dedup)', () => {
@@ -73,7 +79,7 @@ test('fallback position: own wrapper entry never counts as the header entry', ()
     [ENTRY_SELECTOR, fakeElement(rect(1000, 20, 28, 28), { own: true })],
     [ANCHOR_SELECTOR, fakeElement(rect(1000, 20, 28, 28))],
   ]) })
-  assert.deepEqual(module.statusFallbackPosition(), { top: 20, left: 964 })
+  assert.deepEqual(module.statusFallbackPosition(), { top: 20, left: 892 })
 })
 
 test('fallback position: no anchor and no seat both yield undefined', () => {
@@ -86,10 +92,10 @@ test('fallback position: no anchor and no seat both yield undefined', () => {
 
 test('fallback position: sits vertically centred left of the native anchor', () => {
   const { module } = load({ document: makeDom([[ANCHOR_SELECTOR, fakeElement(rect(1000, 84, 28, 28))]]) })
-  assert.deepEqual(module.statusFallbackPosition(), { top: 84, left: 964 })
+  assert.deepEqual(module.statusFallbackPosition(), { top: 84, left: 892 })
   // Non-square anchor: button is 28 high, aligned to the anchor's midline.
   const tall = load({ document: makeDom([[ANCHOR_SELECTOR, fakeElement(rect(1000, 40, 32, 64))]]) })
-  assert.deepEqual(tall.module.statusFallbackPosition(), { top: 58, left: 964 })
+  assert.deepEqual(tall.module.statusFallbackPosition(), { top: 58, left: 892 })
 })
 
 test('fallback position: walks left past occupying controls and other plugins fallbacks', () => {
@@ -108,13 +114,24 @@ test('fallback position: walks left past occupying controls and other plugins fa
   assert.equal(position.top, 20)
 })
 
+test('fallback position: reserves delayed plugin seats and stays left of mounted neighbours', () => {
+  const anchor = [ANCHOR_SELECTOR, fakeElement(rect(1000, 20, 28, 28))]
+  const pending = load({ document: makeDom([anchor]) })
+  assert.deepEqual(pending.module.statusFallbackPosition(), { top: 20, left: 892 })
+  const neighbours = load({ document: makeDom([
+    anchor,
+    ['[data-dsh-dock-fallback], [data-dsh-bottom-toggle], [data-dsew-resume-fallback], [data-dsh-editor-workbench="resume"]', fakeElement(rect(820, 20, 28, 28))],
+  ]) })
+  assert.deepEqual(neighbours.module.statusFallbackPosition(), { top: 20, left: 784 })
+})
+
 test('fallback position: the overlay itself never counts as an occupant', () => {
   const { module } = load({ document: makeDom([
     [ANCHOR_SELECTOR, fakeElement(rect(1000, 20, 28, 28))],
     [CONTROLS_SELECTOR, fakeElement(rect(964, 20, 28, 28), { own: true })],
     [ENTRY_SELECTOR, fakeElement(rect(964, 20, 28, 28), { own: true })],
   ]) })
-  assert.deepEqual(module.statusFallbackPosition(), { top: 20, left: 964 })
+  assert.deepEqual(module.statusFallbackPosition(), { top: 20, left: 892 })
 })
 
 test('fallback position: fully occupied row leaves no seat instead of covering controls', () => {
@@ -239,6 +256,7 @@ test('overlay renders the compact status entry inside a portal wrapper once real
   const anchor = nodes(after.props.anchor).find(node => node.props && node.props['data-dvt-status-entry'] !== undefined)
   assert.ok(anchor, 'fallback button carries the stable entry marker')
   assert.equal(anchor.props.className, 'dvt-session-tag dvt-session-tag-compact')
+  assert.ok(nodes(anchor).some(node => node.type === 'svg'), 'compact status includes a tunnel icon, not only a dot')
   assert.ok(typeof anchor.props['aria-label'] === 'string' && anchor.props['aria-label'].length > 0)
   assert.match(anchor.props.title, /sessionStatusReady/)
   assert.equal(nodes(anchor).some(node => node.props && node.props.className === 'dvt-tag-chevron'), false,

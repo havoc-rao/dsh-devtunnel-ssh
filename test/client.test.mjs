@@ -389,6 +389,31 @@ test('the channel box lists live channels, retry/blocked state and mirrors new e
   } finally { console.warn = savedWarn }
 })
 
+test('catalog status dots distinguish runtime states without coloring authorization as running', async () => {
+  const cases = [
+    ['ready', 'managed', '#22c55e', '已开启'],
+    ['starting', 'managed', '#f59e0b', '启动中'],
+    ['recovering', 'managed', '#f59e0b', '恢复中'],
+    ['stopping', 'managed', '#f59e0b', '正在关闭'],
+    ['error', 'managed', '#dc2626', '连接失败'],
+    ['stopped', 'managed', '#94a3b8', '已停止'],
+    ['future-state', 'managed', '#94a3b8', '已停止'],
+    ['ready', 'external', '#3b82f6', '外部'],
+  ]
+  for (const [state, mode, color, label] of cases) {
+    const rig = panelRig({ payload: { ...feed, recent: [], channels: [{ ...feed.channels[0], state, mode }] } })
+    await settle(); rig.render()
+    const dot = nodes(rig.tree).find(node => node.props?.className === 'dvt-dot' && node.props['data-state'])
+    assert.equal(dot.props.style.background, color, `${mode}/${state}`)
+    assert.equal(dot.props['aria-hidden'], true)
+    const badge = nodes(rig.tree).find(node => node.props?.className === 'dvt-badge' && nodes(node).includes(dot))
+    assert.ok(text(badge).includes(label), text(badge))
+    const authorization = nodes(rig.tree).find(node => node.props?.className === 'dvt-dot' && !node.props['data-state'])
+    assert.equal(authorization.props.style, undefined, 'authorization remains neutral')
+    assert.match(text(rig.tree), /\.dvt-panel \.dvt-dot\[data-state\]\{opacity:1\}/u)
+  }
+})
+
 test('the catalog retains stopped and failed channels in the list', async () => {
   const rig = panelRig({ payload: { ...feed, channels: [{ ...feed.channels[0], state: 'error', endpoint: null, error: 'CONNECT_RETRY_EXHAUSTED' }] } })
   await settle(); rig.render()
@@ -711,11 +736,18 @@ test('the session header chip renders only for devtunnel workspaces and shows li
   assert.equal(chip.props.className, 'dvt-session-tag')
   assert.match(source, /\.dvt-session-tag:not\(\.dvt-session-tag-static\):hover/)
   assert.match(source, /\.dvt-session-tag:focus-visible/)
+  const targetDetails = opened.props.items.find(item => item.id === 'target').text
+  assert.match(text(targetDetails), /statusTarget/)
+  assert.ok(nodes(targetDetails).some(node => node.props?.className === 'dvt-session-connection'))
+  assert.match(text(opened.props.items.find(item => item.id === 'tips').text), /statusTipUnavailable/)
+  assert.equal(opened.props.items.find(item => item.id === 'refresh').label, 'statusRefresh')
   assert.ok(opened.props.items.filter(item => !item.type).every(item => item.icon))
   assert.deepEqual(opened.props.items.filter(item => !item.type).map(item => item.id), ['start', 'restart', 'stop', 'refresh'])
   opened.props.onClose()
   assert.equal(render().props.open, false)
-  assert.match(text(chip), /sessionStatusRecovering/)
+  assert.doesNotMatch(text(chip), /Dev Tunnel|sessionStatusRecovering/)
+  assert.match(chip.props.title, /sessionStatusRecovering/)
+  assert.ok(nodes(chip).some(node => node.type === 'svg'), 'recognizable tunnel icon remains visible')
   assert.doesNotMatch(text(chip), /SSH|sessionSsh/)
   assert.equal(nodes(chip).some(node => Object.hasOwn(node.props || {}, 'data-devtunnel-ssh-state')), false)
   assert.match(chip.props.title, /Mac · t\.jpe1:22 \(CONNECT_EXITED\)/)
