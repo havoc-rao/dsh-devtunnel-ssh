@@ -218,6 +218,28 @@ assert_config_safe() {
   mode=$(/usr/bin/stat -f '%Lp' "$1")
   [ "$owner" = 0 ] && [ $((0$mode & 0022)) = 0 ] || { echo 'SSH configuration must be root-owned and not group/world writable' >&2; exit 1; }
 }
+validate_apple_crypto() {
+  # Only this Apple system link is supported; never follow arbitrary includes.
+  crypto_link=/private/etc/ssh/crypto.conf
+  crypto_dir=/private/etc/ssh/crypto
+  crypto_target="$crypto_dir/apple.conf"
+  assert_config_safe /private
+  assert_config_safe /private/etc
+  assert_config_safe /private/etc/ssh
+  assert_config_safe "$crypto_dir"
+  [ -d "$crypto_dir" ] || { echo 'Invalid Apple crypto directory' >&2; exit 1; }
+  [ -L "$crypto_link" ] && [ "$(/usr/bin/readlink "$crypto_link")" = 'crypto/apple.conf' ] || { echo 'Unsupported Apple crypto link target' >&2; exit 1; }
+  [ "$(/usr/bin/stat -f '%u' "$crypto_link")" = 0 ] || { echo 'Apple crypto link must be root-owned' >&2; exit 1; }
+  assert_config_safe "$crypto_target"
+  [ -f "$crypto_target" ] || { echo 'Apple crypto target must be a regular file' >&2; exit 1; }
+  /usr/bin/awk '
+    { sub(/#.*/, ""); directive=tolower($1) }
+    NF == 0 { next }
+    directive != "ciphers" && directive != "kexalgorithms" && directive != "macs" { bad=1 }
+    NF != 2 { bad=1 }
+    END { exit bad }
+  ' "$crypto_target" || { echo 'Unsupported Apple crypto directives; no changes made' >&2; exit 1; }
+}
 assert_no_symlink /private/etc/ssh/sshd_config
 assert_config_safe /private/etc/ssh
 assert_config_safe "$config_root"
@@ -244,10 +266,14 @@ if /usr/bin/awk 'tolower($1) == "include" { found=1 } END { exit !found }' "$con
       [ -f "$config" ] || { echo 'SSH include is not a regular file' >&2; exit 1; }
       /usr/bin/awk '
         { sub(/#.*/, ""); directive=tolower($1) }
-        directive == "include" || directive == "match" || directive == "authorizedkeyscommand" || directive == "authorizedkeyscommanduser" { bad=1 }
+        directive == "include" { if (NF != 2 || $2 != "/etc/ssh/crypto.conf" || FILENAME != "/private/etc/ssh/sshd_config.d/100-macos.conf") bad=1 }
+        directive == "match" || directive == "authorizedkeyscommand" || directive == "authorizedkeyscommanduser" { bad=1 }
         directive == "authorizedkeysfile" { if (NF != 2 || $2 != ".ssh/authorized_keys") bad=1 }
         END { exit bad }
       ' "$config" || { echo 'Custom SSH include requires manual review; no changes made' >&2; exit 1; }
+      if /usr/bin/awk '{ sub(/#.*/, "") } tolower($1) == "include" { found=1 } END { exit !found }' "$config"; then
+        validate_apple_crypto
+      fi
       set -- "$@" "$config"
     done
   fi

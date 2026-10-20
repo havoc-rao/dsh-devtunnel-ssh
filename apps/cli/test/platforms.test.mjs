@@ -73,7 +73,11 @@ test('Mac script safely quotes data and gates account, symlinks and preserving a
   assert.ok(script.includes(`key_line='ssh-ed25519 ${blob} x'\\''; $(evil)'`));
   for (const gate of ['/usr/bin/id -un', 'Only the CURRENT macOS user', 'NFSHomeDirectory', 'Home does not belong to CURRENT user', '[ ! -L "$candidate" ]', 'assert_no_symlink "$target"', '/bin/chmod 700 "$directory"', '/bin/chmod 600 "$target"', '-v blob="$key_blob"', '/bin/cat "$snapshot" > "$temp"', "printf '%s\\n'", '/usr/bin/cmp -s', 'authorized_keys.backup.', '/bin/mv -f "$temp" "$target"']) assert.ok(script.includes(gate), gate);
   assert.ok(script.includes('assert_no_symlink /private/etc/ssh/sshd_config'));
-  assert.ok(script.includes('directive == "include" || directive == "match"'));
+  assert.ok(script.includes('validate_apple_crypto'));
+  assert.ok(script.includes('Unsupported Apple crypto link target'));
+  assert.ok(script.includes('assert_config_safe "$crypto_target"'));
+  assert.ok(script.includes('crypto/apple.conf'));
+  assert.ok(script.includes('FILENAME != "/private/etc/ssh/sshd_config.d/100-macos.conf"'));
   assert.ok(script.includes('$2 != "/etc/ssh/sshd_config.d/*"'));
   assert.ok(script.includes('assert_config_safe "$config"'));
   assert.ok(script.includes('root-owned and not group/world writable'));
@@ -91,7 +95,7 @@ test('generated POSIX script passes parse-only shell check without execution', {
 
 test('Mac root/include AWK validators accept default include and reject custom trust paths', { skip: process.platform === 'win32' }, () => {
   const { script } = planMacAuthorize({ username: 'fixture', publicKey: `ssh-ed25519 ${blob}`, home: '/Users/fixture' });
-  const blocks = [...script.matchAll(/\/usr\/bin\/awk '\n([\s\S]*?)\n\s*' "\$(config_root|config)"/g)];
+  const blocks = [...script.matchAll(/\/usr\/bin\/awk '\n([^']*?)\n\s*' "\$(config_root|config)"/g)];
   assert.equal(blocks.length, 2);
   const root = blocks.find(b=>b[2]==='config_root')[1], child = blocks.find(b=>b[2]==='config')[1];
   const check = (program,input) => spawnSync('/usr/bin/awk',[program],{input,encoding:'utf8'}).status;
@@ -99,6 +103,14 @@ test('Mac root/include AWK validators accept default include and reject custom t
   assert.equal(check(child,'# Apple defaults\nUsePAM yes\n'),0);
   for(const bad of ['Include /tmp/*\n','Match User root\n','AuthorizedKeysFile /tmp/keys\n','AuthorizedKeysCommand /bin/evil\n']) assert.notEqual(check(root,bad),0);
   assert.notEqual(check(child,'Include /etc/ssh/sshd_config.d/*\n'),0);
+  // Supply the exact source name without reading any system configuration.
+  const appleChild=child.replaceAll('FILENAME', '"/private/etc/ssh/sshd_config.d/100-macos.conf"');
+  assert.equal(check(appleChild,'Include /etc/ssh/crypto.conf\n'),0);
+  assert.notEqual(check(child,'Include /etc/ssh/crypto.conf\n'),0);
+  for(const bad of ['Include /tmp/crypto.conf\n','Include /etc/ssh/crypto.conf /tmp/x\n','Match all\n']) assert.notEqual(check(appleChild,bad),0);
+  const crypto=script.match(/\/usr\/bin\/awk '\n([^']*?)\n  ' "\$crypto_target"/)[1];
+  assert.equal(check(crypto,'Ciphers ^aes128-gcm@openssh.com,aes256-gcm@openssh.com\nKexAlgorithms ^ecdh-sha2-nistp256\nMACs ^hmac-sha2-256\n'),0);
+  for(const bad of ['Include /tmp/x\n','AuthorizedKeysFile /tmp/keys\n','Match all\n','Ciphers a b\n']) assert.notEqual(check(crypto,bad),0);
 });
 
 test('diagnostics are read-only arrays and mark CLI version explicit-only', () => {
